@@ -1,9 +1,9 @@
-import datetime
+from datetime import datetime, timedelta
 import uuid
 import base64
 from flask import request
 import os
-from  libs import logs
+from  libs import logs, variables
 from flask import make_response, request, jsonify
 import json
 import traceback
@@ -84,8 +84,15 @@ def validateUnicityOnUpdate(className, dict, id_):
 def checksReferencesId(className, dict):
     #gets all fields within the class
     for entry in className.__checkReferenceFields__:
-        logs.logger.info("Checking field {} Id {} exists in table {}".format(entry, dict[entry],className.__checkReferenceFields__[entry] ))
-        request = className.__checkReferenceFields__[entry].query.filter_by(id=dict[entry]).first_or_404()
+        if (entry in dict):
+            logs.logger.info("Checking field {} Id {} exists in table {}".format(entry, dict[entry],className.__checkReferenceFields__[entry] ))
+            try:
+                tble = className.__checkReferenceFields__[entry]
+                logs.logger.debug("About to call {} , primary context was {}".format(tble, className))
+                tble.query.filter_by(id=dict[entry]).first_or_404()
+                #resultFinal = tble.query.filter(and_(*request_filterAnd)).first_or_404()
+            except Exception as e:
+                raise   Exception('Error object {} {} is unknown '.format(entry,dict[entry]))
 
 
 def countObjectUnicity(className, dict):
@@ -138,7 +145,6 @@ def checkObjectUnicity(className, dict ):
         if (len (result) > 0): # and result.count != 0 ):
           raise Exception('Unicity Error for object type {} - unicity criteriaAND {} , unicityCriteriaOR {} '.format(classNameStr, unicityCriteria, unicityCriteriaOr))
 
-
     
 def returnResponse(data, code):
     resp = make_response(data, code )
@@ -186,3 +192,18 @@ def checkAuthorization(request):
         logs.logger.info("Authorization Code decoded={}".format(decoded))
 
         return  True, decoded       
+
+
+def getCurrentDay():
+    today = datetime.strptime((datetime.now()).strftime(variables.DATE_PATTERN), variables.DATE_PATTERN)
+    return today
+
+def getTomorrowDT():
+    tomorrow = datetime.strptime((datetime.now() + timedelta(days=1)).strftime(variables.DATE_PATTERN), variables.DATE_PATTERN)
+    return tomorrow
+
+def getDateFromStr(str, pattern):
+    return datetime.strptime(str, pattern)
+
+def dateToStr(date, pattern):
+    return date.strftime(pattern)

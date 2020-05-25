@@ -23,7 +23,7 @@ classLoader =  {
     "addresses": Address, 
     "distributionowners" : DistributionOwner,
     "distributionpoints" : DistributionPoint,
-    "bookablelots" : BookableSlot,
+    "bookableslots" : BookableSlot,
     "bookedslots": BookedSlot,
     'covidtracking': CovidTracking 
     }   
@@ -61,6 +61,12 @@ def __getOrPostAll(isAdmin):
     # check method type
     if request.method == 'GET':
       request_filter = []
+      #if distribution point is given, it is mandatory to add in parameter the refDistributionOwnerId
+      if (properClassName == 'distributionpoints'):
+        if (not 'refDistributionOwnerId' in request.args or request.args.get('refDistributionOwnerId') == '' or  request.args.get('refDistributionOwnerId') == None):
+          raise Exception('Error: refDistributionOwnerId is mandatory when accessing this route')
+        #checks given distribution point exist
+        utils.checksReferencesId(properClass, request.args)
       for entry in request.args:
         if ((request.args.get(entry) != None) & (request.args.get(entry) != '')):
           logs.logger.debug(entry)
@@ -128,7 +134,7 @@ def __getOrPostAll(isAdmin):
           flag_modified(bookableSlot, 'numberOfPerson')
         elif (properClassName ==' covidtracking'):
           # checks the distribution poitn exists
-          checkDistributionPoint = DistributionPoint.query.filter_by(id=received_request['refDistributionPoint']).first_or_404()
+          #checkDistributionPoint = DistributionPoint.query.filter_by(id=received_request['refDistributionPoint']).first_or_404()
           # insert it
           newTempate = properClass(id = uuid.uuid4().__str__(),
                firstname = received_request['firstname'],
@@ -157,6 +163,7 @@ def __getOrPostAll(isAdmin):
               maxCapacity=received_request['maxCapacity'],
               refDistributionOwnerId=received_request['refDistributionOwnerId'],
               refRecurringSlotsTemplateId=received_request['refRecurringSlotsTemplateId'],
+              refOpeningHoursTemplateId=received_request['refOpeningHoursTemplateId'],              
               refAddressId=received_request['refAddressId'],
           )  
         elif (properClassName == 'openinghourstemplates'):
@@ -248,28 +255,33 @@ def __getOrPutOrDelById(isAdmin, id_):
           except TypeError:
             result_dict = objects.serialize_public           
       else:
-        # these tow routes can have more param sgiven in the url
+        # these tow routes can have more param given in the url
         request_filter = []
-        # both covid tracking & bookable slots endpoints are using the distribution id as filter
-        request_filter.append(properClass.refDistributionId == id_)
+        # both covid tracking & bookable slots endpoints are using the distribution id as filter, given in the url
+        # first checks the ref id given
+        utils.checksReferencesId(properClass, {"refDistributionPointId":id_})      
+        request_filter.append(properClass.refDistributionPointId == id_)
         if ( properClassName == 'bookableslots'):  # bookable slot api has a specific field for filtering
+          
           if ('dateStart' not in request.args ):
-            request_filter.append(properClass.dateStart >= datetime.datetime.now())
+            request_filter.append(properClass.dateStart >= utils.getCurrentDay())
           else:
-            request_filter.append(properClass.dateStart >= request.args.get('dateStart'))
+            request_filter.append(properClass.dateStart >= utils.getDateFromStr(request.args.get('dateStart'), variables.DATE_PATTERN))
 
         # pass all attributes received in the and filter. 
         for entry in request.args:
           if ((request.args.get(entry) != None) & (request.args.get(entry) != '')):
             logs.logger.debug(entry)
-            request_filter.append(properClass.__dict__[entry] == (request.args.get(entry) ))
+            #be carefull if it is a date, do not pass it, it's done already for bookableslots
+            if (entry != 'dateStart' and properClassName != 'bookableslots'):
+              request_filter.append(properClass.__dict__[entry] == (request.args.get(entry) ))
 
 
         objects = properClass.query.filter(and_(*request_filter)).all()
         if (isAdmin):
-          result_dict = objects.serialize
+          result_dict = [ item.serialize for item in objects ]
         else:
-          result_dict = objects.serialize_public
+          result_dict = [ item.serialize_public for item in objects ] #objects.serialize_public
     elif request.method == 'PUT':
       # method is PUT
       # checks object exists
@@ -349,7 +361,7 @@ def authenticatedRoutesGetOrPostAll():
 
 @app.route(variables.DEFAULT_API_URL + '/distributionowners/<id_>', methods=['PUT'])
 @app.route(variables.DEFAULT_API_URL + '/openinghourstemplates/<id_>', methods=['GET', 'PUT'])
-@app.route(variables.DEFAULT_API_URL + '/recurringslotstemplate/<id_>', methods=['GET', 'PUT'])
+@app.route(variables.DEFAULT_API_URL + '/recurringslotstemplates/<id_>', methods=['GET', 'PUT'])
 @app.route(variables.DEFAULT_API_URL + '/addresses/<id_>', methods=['GET', 'PUT'])
 @app.route(variables.DEFAULT_API_URL + '/distributionpoints/<id_>', methods=['PUT'])
 @app.route(variables.DEFAULT_API_URL + '/covidtracking/<id_>', methods=['GET'])

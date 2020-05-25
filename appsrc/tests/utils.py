@@ -4,6 +4,7 @@ from libs import variables
 import base64
 import uuid
 from appsrc import db
+from datetime import datetime, timedelta
 
 
 def fillDb():
@@ -54,6 +55,19 @@ def fillDb():
         refAddressId = add.id,  refDistributionOwnerId=owner_id, maxCapacity=10, refOpeningHoursTemplateId=openHTemplateId, refRecurringSlotsTemplateId=recurringSlotsTemplateId)
     db.session.add(dP0)
     db.session.commit()
+
+    # adds a bookable slot
+    BS1Id = uuid.uuid4().__str__()
+    now = datetime.now()
+    BS = BookableSlot(id=BS1Id, dateStart=now - timedelta(minutes=1), dateEnd=now + timedelta(minutes=40), maxCapacity=10, refDistributionPointId=distPart, currentCapacity=0)
+    db.session.add(BS)
+    db.session.commit()
+
+    BS2Id = uuid.uuid4().__str__()
+    BS2 = BookableSlot(id=BS2Id, dateStart=now + timedelta(hours=23), dateEnd=now + timedelta(hours=25), maxCapacity=10, refDistributionPointId=distPart, currentCapacity=0)
+    db.session.add(BS2)
+    db.session.commit()
+
 def purgeCookies():
     appclient.cookie_jar.clear()
     appclient.cookie_jar.clear_session_cookies()

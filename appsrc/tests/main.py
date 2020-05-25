@@ -4,7 +4,7 @@ import unittest
 import variables 
 import uuid 
 
-from appsrc.tests import utils, test_login, test_addresses, test_openinghourstemplates, test_distributionowners
+from appsrc.tests import utils, test_login, test_addresses, test_openinghourstemplates, test_distributionowners, test_recurringslotstemplates, test_distributionpoints, test_bookableslots
 
 
 
@@ -23,13 +23,17 @@ def suite():
     suite = unittest.TestSuite()
     
     #DONE
-    suite.addTest(unittest.makeSuite(test_login.TestCases))
-    suite.addTest(unittest.makeSuite(test_addresses.TestCases))
-    suite.addTest(unittest.makeSuite(test_distributionowners.TestCases))
-    suite.addTest(unittest.makeSuite(test_openinghourstemplates.TestCases))
+    #suite.addTest(unittest.makeSuite(test_login.TestCases))
+    #suite.addTest(unittest.makeSuite(test_addresses.TestCases))
+    #suite.addTest(unittest.makeSuite(test_openinghourstemplates.TestCases))
+    #suite.addTest(unittest.makeSuite(test_recurringslotstemplates.TestCases))
+    #suite.addTest(unittest.makeSuite(test_distributionowners.TestCases))    
+    #suite.addTest(unittest.makeSuite(test_distributionpoints.TestCases))
+    suite.addTest(unittest.makeSuite(test_bookableslots.TestCases))
     #TODO
-    # recurringslottemplates
-    # distribution owners
+    
+    
+    # distribution points
     # bookable slots
     # bookedslotss
     # covidtracking
@@ -90,5 +94,5 @@ def fillDb():
 if __name__ == '__main__':
     fillDb()
     print("now calling tests")
-    unittest.main(warnings='ignore',verbosity=3,defaultTest='suite')
+    unittest.main(warnings='ignore',verbosity=0,defaultTest='suite')
     print("ending tests")

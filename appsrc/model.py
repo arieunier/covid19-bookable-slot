@@ -413,12 +413,12 @@ class DistributionPoint(db.Model):
              }                                                
             }
     __unicityCriteria__ = []  # 
-    __unicityCriteriaOr__ = [] # unicity is telephone  OR email.
+    __unicityCriteriaOr__ = ['telephone', 'email']
     __publicNoLoadOptions__ = ['openingHoursTemplate', 'recurringSlotsTemplate']
     __checkReferenceFields__ = { 'refDistributionOwnerId': DistributionOwner, 
-            "refOpeningHoursTemplateId" : OpeningHoursTemplate, 
-            "refRecurringSlotsTemplateId" : RecurringSlotsTemplate,
-            "refAddressId":Address
+            'refOpeningHoursTemplateId' : OpeningHoursTemplate, 
+            'refRecurringSlotsTemplateId' : RecurringSlotsTemplate,
+            'refAddressId':Address
     }
     # mandatory
     id = db.Column(db.String(36), primary_key=True, index=True, unique=True, nullable=False)
@@ -512,7 +512,7 @@ class BookableSlot(db.Model):
     __unicityCriteria__ = ['refDistributionPointId', 'dateStart']  # 
     __unicityCriteriaOr__ = [] # 
     __publicNoLoadOptions__ = ['openingHoursTemplate', 'recurringSlotsTemplate']    
-    __checkReferenceFields__ = {'refDistributionPointId'}
+    __checkReferenceFields__ = {'refDistributionPointId': DistributionPoint}
     # mandatory
     id = db.Column(db.String(36), primary_key=True, index=True, unique=True, nullable=False)
     # fiels
