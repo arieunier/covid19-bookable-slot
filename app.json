@@ -1,0 +1,47 @@
+{
+  "name": "Covid19 - Booking Slot System",
+  "description" : "Allows to book a slot in a distribution point (store, ...).",
+  "repository":"https://github.com/arieunier/heroku-demo",
+  "keywords": ["python", "postgres", "redis", "connect"], 
+  "scripts": {
+      "postdeploy": "echo creating database; python db_migrate.py migrate; python db_migrate.py upgrade"
+    },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "standard-1x"
+    }
+  },
+  "addons": [
+    {"plan": "heroku-postgresql:hobby-dev"},
+    {"plan": "heroku-redis:hobby-dev"},
+    {"plan": "timber-logging:free"}
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ],
+  "env":
+    {
+      "LOG_LEVEL": {
+        "Description" : "Log level for applications",
+        "value" : "DEBUG",
+        "required" : true
+      },
+
+      "APPNAME" : {
+        "Description" : "name of the application",
+        "value" : "yourdemo-cdo",
+        "required" : true
+      }
+  },
+
+  "environments": {
+    "test": {
+      "scripts": {
+        "test": "export PYTHONPATH=.:./libs:./appsrc; python appsrc/tests/main.py "
+      }
+    }
+  }
+}
