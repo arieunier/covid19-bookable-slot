@@ -30,33 +30,31 @@ class User(UserMixin, db.Model):
 class RecurringSlotsTemplate(db.Model):
     __tablename__ = "tRecurringSlotsTemplate"
     __jsonName__ = "RecurringSlotsTemplate"
-    __curratedValue__  =  [ 
-            { 
-              'field': 'name', 
+    __curratedValue__  = {
+
+            'name' : {
               'isMandatory': True, 
               'forbidenvalues': [None, ''] 
-            } ,
-            { 
-              'field': 'slotLength', 
+            } ,            
+            'slotLength': {
               'isMandatory': True, 
               'forbidenvalues': [''],
               'allowedvalues': [0, 15, 30, 45, 60, 90, 120, 150, 180, 210, 240]
             } , 
-            { 
-              'field': 'slotCapacity', 
+            'slotCapacity':{
               'isMandatory': True, 
               'forbidenvalues': [0, ''] 
-            } ,                        
-            { 
-              'field': 'description', 
+            } ,
+            'description': {
               'isMandatory': False,
               'replaceValue' : '', 
               'forbidenvalues': [ None] 
             }              
-          ]
+          }
     __unicityCriteria__ = ['name']  
     __unicityCriteriaOr__ = []
     __publicNoLoadOptions__ = []
+    __checkReferenceFields__ = {}
 
     # mandatory
     id = db.Column(db.String(36), primary_key=True, index=True, unique=True, nullable=False)
@@ -164,7 +162,7 @@ class OpeningHoursTemplate(db.Model):
     __unicityCriteria__ = ['name']  
     __unicityCriteriaOr__ = []
     __publicNoLoadOptions__ = []
-
+    __checkReferenceFields__ = {}
     # mandatory
     id = db.Column(db.String(36), primary_key=True, index=True, unique=True, nullable=False)
     #fiels  
@@ -250,6 +248,7 @@ class Address(db.Model):
     __unicityCriteria__ = []  # means an address is not unique
     __unicityCriteriaOr__ = []
     __publicNoLoadOptions__ = []
+    __checkReferenceFields__ = {}
     # mandatory
     id = db.Column(db.String(36), primary_key=True, index=True, unique=True, nullable=False)
     # fiels
@@ -289,42 +288,37 @@ class Address(db.Model):
 class DistributionOwner(db.Model):
     __tablename__ = "tDistributionOwner"
     __jsonName__ = "distributionowner"
-    __curratedValue__  =  [ 
-            { 
-              'field': 'name', 
+    __curratedValue__  =  { 
+              'name': {
               'isMandatory': True, 
               'forbidenvalues': [None, ''] 
             } ,
-            { 
-              'field': 'description', 
+            'description': {
               'isMandatory': False, 
               'replaceValue' : '', 
               'forbidenvalues': [] 
-            } , 
-             { 
-              'field': 'logoUrl', 
+            } ,
+            'logoUrl': {
               'isMandatory': True, 
               'forbidenvalues': [None,''] 
-             } , 
-            { 
-              'field': 'telephone', 
+             } ,
+             'telephone' : {
               'isMandatory': True, 
               'forbidenvalues': [None,''] 
              } ,  
-            { 
-              'field': 'email', 
+              'email': { 
               'isMandatory': True, 
               'forbidenvalues': [None, ''] 
              } ,  
-            { 
-              'field': 'refAddressId', 
+             'refAddressId': {
               'isMandatory': True, 
               'forbidenvalues': [None, ''] 
-             } ,            
-          ]
+             }           
+    }
     __unicityCriteria__ = []  # 
     __unicityCriteriaOr__ = ['telephone', 'email'] # unicity is telephone  OR email.
     __publicNoLoadOptions__ = ['distributionPoints']
+    __checkReferenceFields__ = { 'refAddressId': Address}
     # mandatory
     id = db.Column(db.String(36), primary_key=True, index=True, unique=True, nullable=False)
     #fiels  
@@ -349,7 +343,7 @@ class DistributionOwner(db.Model):
     updated_on = db.Column(db.DateTime, server_default=db.func.now(), server_onupdate=db.func.now())
 
     def __repr__(self):
-        return '<object id={}>'.format(id)
+        return '<object id={} - Name={} >'.format(id, self.name)
    
 
     @property
@@ -375,62 +369,57 @@ class DistributionOwner(db.Model):
 class DistributionPoint(db.Model):
     __tablename__ = "tDistributionPoint"
     __jsonName__ = "distributionpoint"
-    __curratedValue__  =  [ 
-            { 
-              'field': 'name', 
+    __curratedValue__  =  { 
+              'name' : {            
               'isMandatory': True, 
               'forbidenvalues': [None, ''] 
             } ,
-            { 
-              'field': 'description', 
+            'description' : {
               'isMandatory': False, 
               'replaceValue' : '', 
               'forbidenvalues': [] 
             } , 
-             { 
-              'field': 'logoUrl', 
+             'logoUrl': {
               'isMandatory': True, 
               'forbidenvalues': [None,''] 
              } , 
-            { 
-              'field': 'telephone', 
+              'telephone': {
               'isMandatory': True, 
               'forbidenvalues': [None,''] 
              } ,  
-            { 
-              'field': 'email', 
+               'email' : {
               'isMandatory': True, 
               'forbidenvalues': [None, ''] 
              } ,  
-            { 
-              'field': 'maxCapacity', 
+             'maxCapacity' : {
               'isMandatory': True, 
               'forbidenvalues': [None, 0] 
              } ,              
-            { 
-              'field': 'refAddressId', 
+             'refAddressId': {
               'isMandatory': True, 
               'forbidenvalues': [None, ''] 
-             } ,  
-            { 
-              'field': 'refDistributionOwnerId', 
+             } ,
+             'refDistributionOwnerId': {
               'isMandatory': True, 
               'forbidenvalues': [None, ''] 
              } ,   
-            { 
-              'field': 'refOpeningHoursTemplateId', 
+             'refOpeningHoursTemplateId': {
               'isMandatory': True, 
               'forbidenvalues': [None, ''] 
              }  ,
-            { 
-              'field': 'refRecurringSlotsTemplateId', 
+            'refRecurringSlotsTemplateId': {
               'isMandatory': True, 
               'forbidenvalues': [None, ''] 
              }                                                
-          ]
+            }
     __unicityCriteria__ = []  # 
     __unicityCriteriaOr__ = [] # unicity is telephone  OR email.
     __publicNoLoadOptions__ = ['openingHoursTemplate', 'recurringSlotsTemplate']
+    __checkReferenceFields__ = { 'refDistributionOwnerId': DistributionOwner, 
+            "refOpeningHoursTemplateId" : OpeningHoursTemplate, 
+            "refRecurringSlotsTemplateId" : RecurringSlotsTemplate,
+            "refAddressId":Address
+    }
     # mandatory
     id = db.Column(db.String(36), primary_key=True, index=True, unique=True, nullable=False)
     #fiels  
@@ -502,31 +491,28 @@ class DistributionPoint(db.Model):
 class BookableSlot(db.Model):
     __tablename__ = "tBookableSlot"
     __jsonName__ = "bookableslot"
-    __curratedValue__  =  [ 
-            { 
-              'field': 'dateStart', 
+    __curratedValue__  =   { 
+              'dateStart':{
               'isMandatory': True, 
               'forbidenvalues': [None, ''] 
             } ,
-            { 
-              'field': 'dateEnd', 
+            'dateEnd': {
               'isMandatory': False, 
               'forbidenvalues': [] 
             } , 
-             { 
-              'field': 'maxCapacity', 
+              'maxCapacity': {
               'isMandatory': True, 
               'forbidenvalues': [0,''] 
-             } , 
-            { 
-              'field': 'refDistributionPoint', 
+             } ,
+             'refDistributionPointId': {
               'isMandatory': True, 
               'forbidenvalues': [None,''] 
              }                                               
-          ]
-    __unicityCriteria__ = ['refDistributionPoint', 'dateStart']  # 
+            }
+    __unicityCriteria__ = ['refDistributionPointId', 'dateStart']  # 
     __unicityCriteriaOr__ = [] # 
     __publicNoLoadOptions__ = ['openingHoursTemplate', 'recurringSlotsTemplate']    
+    __checkReferenceFields__ = {'refDistributionPointId'}
     # mandatory
     id = db.Column(db.String(36), primary_key=True, index=True, unique=True, nullable=False)
     # fiels
@@ -535,7 +521,7 @@ class BookableSlot(db.Model):
     maxCapacity = db.Column(db.Integer, index=False, unique=False, nullable=False)
     currentCapacity = db.Column(db.Integer, index=False, unique=False, nullable=False)
     # references
-    refDistributionPoint = db.Column(db.String(36), db.ForeignKey('tDistributionPoint.id'), index=False, nullable=False)
+    refDistributionPointId = db.Column(db.String(36), db.ForeignKey('tDistributionPoint.id'), index=False, nullable=False)
 
     # children
 
@@ -560,7 +546,7 @@ class BookableSlot(db.Model):
             'dateEnd' : self.dateEnd.strftime(variables.DATETIME_PATTERN),
             'maxCapacity':self.maxCapacity,
             'currentCapacity':self.currentCapacity,
-            'refDistributionPoint':self.refDistributionPoint
+            'refDistributionPointId':self.refDistributionPointId
         }  
 
     @property
@@ -581,53 +567,48 @@ class BookableSlot(db.Model):
 class BookedSlot(db.Model):
     __tablename__ = "tBookedSlot"
     __jsonName__ = "bookedslots"
-    __curratedValue__  =  [ 
-            { 
-              'field': 'refDistributionPointId', 
+    __curratedValue__  =  {
+
+            'refDistributionPointId' : {
               'isMandatory': True, 
               'forbidenvalues': [None, ''] 
              } ,   
-            { 
-              'field': 'refBookableSlotId', 
+            'refBookableSlotId': {
+
               'isMandatory': True, 
               'forbidenvalues': [None, ''] 
              }  ,
-            { 
-              'field': 'firstname', 
+             'firstname' : {
               'isMandatory': True, 
               'forbidenvalues': [None, ''] 
              }  ,
-            { 
-              'field': 'lastname', 
+             'lastname' : {
               'isMandatory': True, 
               'forbidenvalues': [None, ''] 
              }  ,
-            { 
-              'field': 'telephone', 
+             'telephone': {
               'isMandatory': True, 
               'forbidenvalues': [None, ''] 
              }  ,
-            { 
-              'field': 'email', 
+             'email': {
               'isMandatory': True, 
               'forbidenvalues': [None, ''] 
              }  ,
-            { 
-              'field': 'numberOfPerson', 
+              'numberOfPerson': {
               'isMandatory': True, 
               'forbidenvalues': [None, ''] 
              }       ,  
-            { 
-              'field': 'status', 
+             'status': {
               'isMandatory': False,
               'replaceValue':'Booked' ,
               'forbidenvalues': [None, ''],
               'allowedvalues': ['Booked', 'checkedIn']
              }                                                                                                                  
-          ]
+    }
     __unicityCriteria__ = []  # 
     __unicityCriteriaOr__ = [] # unicity is telephone  OR email.
     __publicNoLoadOptions__ = ['openingHoursTemplate', 'recurringSlotsTemplate']
+    __checkReferenceFields__ = {'refDistributionPointId': DistributionPoint, 'refBookableSlotId': BookableSlot}    
     # mandatory
     id = db.Column(db.String(36), primary_key=True, index=True, unique=True, nullable=False)
     # fiels
@@ -683,41 +664,36 @@ class BookedSlot(db.Model):
 class CovidTracking(db.Model):
     __tablename__ = "tCovidTracking"
     __jsonName__ = "covidtrackings"
-    __curratedValue__  =  [ 
-            { 
-              'field': 'refDistributionPointId', 
+    __curratedValue__  =  {'refDistributionPointId': {
               'isMandatory': True, 
               'forbidenvalues': [None, ''] 
              } ,       
-            { 
-              'field': 'firstname', 
+             'firstname': {
               'isMandatory': True, 
               'forbidenvalues': [None, ''] 
              }  ,
-            { 
-              'field': 'lastname', 
+              'lastname': {
               'isMandatory': True, 
               'forbidenvalues': [None, ''] 
              }  ,
-            { 
-              'field': 'telephone', 
+             'telephone': {
               'isMandatory': True, 
               'forbidenvalues': [None, ''] 
              }  ,
-            { 
-              'field': 'email', 
+              'email': {
               'isMandatory': True, 
               'forbidenvalues': [None, ''] 
              }  ,
-            { 
-              'field': 'numberOfPerson', 
+              'numberOfPerson' : {
               'isMandatory': True, 
               'forbidenvalues': [None, ''] 
              }       
-             ]     
+    }  
     __unicityCriteria__ = []  # 
     __unicityCriteriaOr__ = [] # unicity is telephone  OR email.
     __publicNoLoadOptions__ = []
+    __checkReferenceFields__ = {'refDistributionPointId':DistributionPoint}
+
     # mandatory
     id = db.Column(db.String(36), primary_key=True, index=True, unique=True, nullable=False)
     # fiels

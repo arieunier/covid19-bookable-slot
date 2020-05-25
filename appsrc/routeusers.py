@@ -2,7 +2,7 @@
 from flask_login import current_user, login_user, logout_user
 from model import User
 from appsrc import login_manager        
-from libs import utils, logs
+from libs import utils, logs, variables
 from flask import Flask, jsonify, make_response, request
 from appsrc import app, db
 
@@ -10,13 +10,13 @@ from appsrc import app, db
 def load_user(id):
     return User.query.get(str(id))
 
-@app.route('/logout')
+@app.route(variables.DEFAULT_API_URL + '/logout')
 def logout():
     logout_user()
     return utils.returnResponse(jsonify("Goodbye Marilou"), 200)
 
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route(variables.DEFAULT_API_URL + '/login', methods=['GET', 'POST'])
 def login():
     logs.logger.debug(utils.get_debug_all(request))
 

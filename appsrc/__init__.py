@@ -9,7 +9,7 @@ import flask_login
 from flask_login import LoginManager
 import uuid
 from flask_session import Session 
-
+from datetime import timedelta
  
 
 
@@ -21,7 +21,10 @@ app = Flask(__name__, template_folder=variables.TEMPLATES_URL, static_folder=var
 app.config.from_object(config.config)
 if (config.config.SESSION_TYPE =='redis' and config.config.SESSION_TYPE != ''):
     sess = Session()
+    sess.permanent = False
+    app.permanent_session_lifetime = timedelta(minutes=240) #4 hours lifetime
     sess.init_app(app)
+    
 login_manager = LoginManager()
 login_manager.init_app(app)
 db = SQLAlchemy(app)

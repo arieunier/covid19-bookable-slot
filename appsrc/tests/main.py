@@ -4,7 +4,7 @@ import unittest
 import variables 
 import uuid 
 
-from appsrc.tests import utils, test_login, test_addresses, test_openinghourstemplates
+from appsrc.tests import utils, test_login, test_addresses, test_openinghourstemplates, test_distributionowners
 
 
 
@@ -22,8 +22,17 @@ appclient = app.test_client()
 def suite():
     suite = unittest.TestSuite()
     
+    #DONE
     suite.addTest(unittest.makeSuite(test_login.TestCases))
-    #suite.addTest(unittest.makeSuite(test_opein.TestCases))
+    suite.addTest(unittest.makeSuite(test_addresses.TestCases))
+    suite.addTest(unittest.makeSuite(test_distributionowners.TestCases))
+    suite.addTest(unittest.makeSuite(test_openinghourstemplates.TestCases))
+    #TODO
+    # recurringslottemplates
+    # distribution owners
+    # bookable slots
+    # bookedslotss
+    # covidtracking
     return suite
  
 
@@ -81,5 +90,5 @@ def fillDb():
 if __name__ == '__main__':
     fillDb()
     print("now calling tests")
-    unittest.main(warnings='ignore',verbosity=0,defaultTest='suite')
+    unittest.main(warnings='ignore',verbosity=3,defaultTest='suite')
     print("ending tests")

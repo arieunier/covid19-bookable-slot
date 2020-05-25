@@ -30,17 +30,17 @@ classLoader =  {
 
 
 ##### UN  AUTHENTICATED ENDPOINTS
-@app.route('/api/covid19/distributionowners/<id_>', methods=['GET'])
-@app.route('/api/covid19/distributionpoints/<id_>', methods=['GET'])
-@app.route('/api/covid19/bookableslots/<id_>', methods=['GET', 'DEL'])
-@app.route('/api/covid19/bookedslots/<id_>', methods=['DEL', 'GET'])
+@app.route(variables.DEFAULT_API_URL + '/distributionowners/<id_>', methods=['GET'])
+@app.route(variables.DEFAULT_API_URL + '/distributionpoints/<id_>', methods=['GET'])
+@app.route(variables.DEFAULT_API_URL + '/bookableslots/<id_>', methods=['GET', 'DEL'])
+@app.route(variables.DEFAULT_API_URL + '/bookedslots/<id_>', methods=['DEL', 'GET'])
 def unauthenticatedRoutesGetOrPutOrDelById(id_):
   logs.logger.debug("UNAuthenticated -> {}-{} ".format(request.method, request.url))
   return __getOrPutOrDelById(current_user.is_authenticated, id_)
 
-@app.route('/api/covid19/distributionpoints', methods=['GET'])
-@app.route('/api/covid19/bookedslots', methods=['POST'])
-@app.route('/api/covid19/covidtracking', methods=['POST'])
+@app.route(variables.DEFAULT_API_URL + '/distributionpoints', methods=['GET'])
+@app.route(variables.DEFAULT_API_URL + '/bookedslots', methods=['POST'])
+@app.route(variables.DEFAULT_API_URL + '/covidtracking', methods=['POST'])
 def unauthenticatedRoutesGetOrPostAll():
   logs.logger.debug(current_user.is_authenticated)
   logs.logger.debug("UNAuthenticated -> {}-{} ".format(request.method, request.url))
@@ -88,6 +88,7 @@ def __getOrPostAll(isAdmin):
         received_request = utils.currateDictValue(ujson.loads(request.json), properClass.__curratedValue__ )
         # check that there is not another openinghourstemplate with this name    
         utils.checkObjectUnicity(properClass, received_request)
+        utils.checksReferencesId(properClass, received_request)      
         if (properClassName == "bookedslots"):
           # test if there is enough room for this slot
           bookableSlot =  BookableSlot.query.filter_by(id=received_request['refBookableSlotId']).options(noloadOptions).first_or_404()
@@ -104,7 +105,7 @@ def __getOrPostAll(isAdmin):
           filtersQueryOr.append(BookableSlot.email == received_request['email'])
           filtersQueryOr.append(BookableSlot.telephone == received_request['telephone'])
           checkDuplicates = BookableSlot.query.filter(and_(*filtersQueryAnd)).filter(or_(*filtersQueryOr)).all()
-          if  checkDuplicates.count() != 0 :
+          if  len(checkDuplicates) != 0 :
             for entry in checkDuplicates:
               logs.logger.error("Duplicate entry found with {}".format(entry))
             raise Exception("A similar booking has been made with same information on the same day.")
@@ -136,8 +137,8 @@ def __getOrPostAll(isAdmin):
             email = received_request['email'],
             numberOfPerson = received_request['numberOfPerson'],
             refDistributionPointId = received_request['refDistributionPointId'])
-
-        elif (properClassName == "distributionowners"):            
+        elif (properClassName == "distributionowners"):      
+            utils.checksReferencesId(properClass, received_request)      
             newTemplate = properClass(id = uuid.uuid4().__str__(),
                 name = received_request['name'], 
                 description=received_request['description'],
@@ -146,18 +147,18 @@ def __getOrPostAll(isAdmin):
                 email=received_request['email'],
                 refAddressId=received_request['refAddressId'],
             )
-        elif (properClassName == "distributionpoints"):            
-            newTemplate = properClass(id = uuid.uuid4().__str__(),
-                name = received_request['name'], 
-                description=received_request['description'],
-                logoUrl=received_request['logoUrl'],
-                telephone=received_request['telephone'],
-                email=received_request['email'],
-                maxCapacity=received_request['maxCapacity'],
-                refDistributionOwnerId=received_request['refDistributionOwnerId'],
-                refRecurringSlotsTemplateId=received_request['refRecurringSlotsTemplateId'],
-                refAddressId=received_request['refAddressId'],
-            )  
+        elif (properClassName == "distributionpoints"):   
+          newTemplate = properClass(id = uuid.uuid4().__str__(),
+              name = received_request['name'], 
+              description=received_request['description'],
+              logoUrl=received_request['logoUrl'],
+              telephone=received_request['telephone'],
+              email=received_request['email'],
+              maxCapacity=received_request['maxCapacity'],
+              refDistributionOwnerId=received_request['refDistributionOwnerId'],
+              refRecurringSlotsTemplateId=received_request['refRecurringSlotsTemplateId'],
+              refAddressId=received_request['refAddressId'],
+          )  
         elif (properClassName == 'openinghourstemplates'):
             newTemplate = properClass(id = uuid.uuid4().__str__(), 
                 name = received_request['name'], 
@@ -209,6 +210,7 @@ def __getOrPostAll(isAdmin):
 
 def __getOrPutOrDelById(isAdmin, id_):
   try:
+    logs.logger.debug(utils.get_debug_all(request))
     # use the end of the route to know which class the call is meant for
     url_splitted=request.url.split('/')
     properClassName = url_splitted[len(url_splitted) - 2 ]
@@ -279,6 +281,16 @@ def __getOrPutOrDelById(isAdmin, id_):
       #depending on unicity criteria for each object, check if this update can lead to a duplicate
       possibleDuplicates = utils.validateUnicityOnUpdate(properClass, received_request, id_)
       # now updates the field and flag it as modified for the orm
+      if (properClassName == 'bookedslots'):
+        if ('confirmationCode' not in request.args ):
+          raise Exception("Error, confirmation code is mandatory to update a booked slot.")
+        #checks the combinaison uid/code
+        request_filter=[]          
+        request_filter.append(properClass.id == received_request['id'])
+        request_filter.append(properClass.confirmationCode == received_request['confirmationCode'])
+        BookedSlot.query.filter(and_(*request_filter)).first_or_404()
+
+
       for entry in received_request:
         logs.logger.debug("updating field ... {} --> {}".format(entry, received_request[entry]))
         objectExist.__dict__[entry] = received_request[entry]
@@ -301,7 +313,7 @@ def __getOrPutOrDelById(isAdmin, id_):
       if (properClassName == 'bookedslot'):
         request_filter.append(properClass.id == received_request['id'])
         request_filter.append(properClass.confirmationCode == received_request['confirmationCode'])
-        BookedSlots.query.filter(and_(*request_filter)).delete()
+        BookedSlot.query.filter(and_(*request_filter)).delete()
       else: # can only be bookableslots as per routes
         #loads it
         bSlot = BookableSlot.query.filter_by(id=id_)
@@ -324,23 +336,23 @@ def __getOrPutOrDelById(isAdmin, id_):
     return utils.returnResponse("The server encountered an error while processing your request", 500)
 
 
-@app.route('/api/covid19/distributionowners',methods=['GET','POST'])
-@app.route('/api/covid19/openinghourstemplates',methods=['GET','POST'])
-@app.route('/api/covid19/recurringslotstemplates',methods=['GET','POST'])
-@app.route('/api/covid19/addresses',methods=['GET', 'POST'])
-@app.route('/api/covid19/distributionpoints', methods=['POST'])
+@app.route(variables.DEFAULT_API_URL + '/distributionowners',methods=['GET','POST'])
+@app.route(variables.DEFAULT_API_URL + '/openinghourstemplates',methods=['GET','POST'])
+@app.route(variables.DEFAULT_API_URL + '/recurringslotstemplates',methods=['GET','POST'])
+@app.route(variables.DEFAULT_API_URL + '/addresses',methods=['GET', 'POST'])
+@app.route(variables.DEFAULT_API_URL + '/distributionpoints', methods=['POST'])
 @login_required
 def authenticatedRoutesGetOrPostAll():
   logs.logger.debug("Authenticated -> {}-{} ".format(request.method, request.url))
   return __getOrPostAll(current_user.is_authenticated)
 
 
-@app.route('/api/covid19/distributionowners/<id_>', methods=['PUT'])
-@app.route('/api/covid19/openinghourstemplates/<id_>', methods=['GET', 'PUT'])
-@app.route('/api/covid19/recurringslotstemplate/<id_>', methods=['GET', 'PUT'])
-@app.route('/api/covid19/addresses/<id_>', methods=['GET', 'PUT'])
-@app.route('/api/covid19/distributionpoints/<id_>', methods=['PUT'])
-@app.route('/api/covid19/covidtracking/<id_>', methods=['GET'])
+@app.route(variables.DEFAULT_API_URL + '/distributionowners/<id_>', methods=['PUT'])
+@app.route(variables.DEFAULT_API_URL + '/openinghourstemplates/<id_>', methods=['GET', 'PUT'])
+@app.route(variables.DEFAULT_API_URL + '/recurringslotstemplate/<id_>', methods=['GET', 'PUT'])
+@app.route(variables.DEFAULT_API_URL + '/addresses/<id_>', methods=['GET', 'PUT'])
+@app.route(variables.DEFAULT_API_URL + '/distributionpoints/<id_>', methods=['PUT'])
+@app.route(variables.DEFAULT_API_URL + '/covidtracking/<id_>', methods=['GET'])
 @login_required
 def authenticatedRoutesGetOrPutById(id_):
   logs.logger.debug("Authenticated -> {}-{} ".format(request.method, request.url))

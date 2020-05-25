@@ -7,7 +7,7 @@
 .DS_Store
 .env
 __pycache__
-.htmlcov
+htmlcov/
 .coverage
 .db
 .sh

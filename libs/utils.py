@@ -60,7 +60,7 @@ def validateUnicityOnUpdate(className, dict, id_):
     if (result == None):
         logs.logger.debug("Result is none, no unicity check on update for that kind of record -> {}".format(classNameStr))
         return result
-    nbResults = result.count()
+    nbResults = len(result)
     logs.logger.debug("Nb Result = {} with unicity criteriaAnd {}  unicityCriteriaOr {} - id {} for object {}".format(nbResults, unicityCriteria,
             unicityCriteriaOr,  id_, classNameStr))
 
@@ -81,12 +81,19 @@ def validateUnicityOnUpdate(className, dict, id_):
                 unicityCriteriaOr, id_))
 
 
+def checksReferencesId(className, dict):
+    #gets all fields within the class
+    for entry in className.__checkReferenceFields__:
+        logs.logger.info("Checking field {} Id {} exists in table {}".format(entry, dict[entry],className.__checkReferenceFields__[entry] ))
+        request = className.__checkReferenceFields__[entry].query.filter_by(id=dict[entry]).first_or_404()
+
+
 def countObjectUnicity(className, dict):
     request_filterAnd = []
     request_filterOr = []
     unicityCriteria = className.__unicityCriteria__
     unicityCriteriaOr = className.__unicityCriteriaOr__
-    
+    logs.logger.debug("unicityCritera  {} \n unicityCriteriaOr {} \n className {} \n dict {}  ".format(unicityCriteria, unicityCriteriaOr, className, dict))
     if (len(unicityCriteria) > 0):
         for entry in unicityCriteria:
             if (entry in dict):
@@ -100,16 +107,21 @@ def countObjectUnicity(className, dict):
         #resultOr = className.query.filter(or_(*request_filter))
     
     if (len(request_filterAnd) == 0 and len(request_filterOr) == 0): #this means the field being update is not in the list of monitored fields
+        logs.logger.info("--> 1 ")
         return None
 
     if (len(unicityCriteria) == 0 and len(unicityCriteriaOr) == 0):
+        logs.logger.info("--> 2")
         resultFinal = None
     elif (len(unicityCriteria) > 0 and len(unicityCriteriaOr) > 0):
-        resultFinal = className.query.filter(or_(*request_filterOr), and_(*request_filterAnd))
+        resultFinal = className.query.filter(or_(*request_filterOr), and_(*request_filterAnd)).all()
+        logs.logger.info("--> 3")
     elif (len(unicityCriteria) == 0 and len(unicityCriteriaOr) > 0):
-        resultFinal = className.query.filter(or_(*request_filterOr))
+        resultFinal = className.query.filter(or_(*request_filterOr)).all()
+        logs.logger.info("--> 4")
     elif (len(unicityCriteria) > 0 and len(unicityCriteriaOr) == 0):        
-        resultFinal = className.query.filter(and_(*request_filterAnd))
+        resultFinal = className.query.filter(and_(*request_filterAnd)).all()
+        logs.logger.info("--> 5")
 
     return resultFinal
 
@@ -118,9 +130,13 @@ def checkObjectUnicity(className, dict ):
     classNameStr = className.__jsonName__
     unicityCriteria = className.__unicityCriteria__
     unicityCriteriaOr = className.__unicityCriteriaOr__
-
-    if (result != None and result.count() != 0 ):
-        raise Exception('Unicity Error for object type {} - unicity criteriaAND {} , unicityCriteriaOR {} '.format(classNameStr, unicityCriteria, unicityCriteriaOr))
+    if (result != None):
+        for entry in result:
+            logs.logger.debug(entry)
+            #logs.logger.debug(entry.serialize)
+    if (result != None):
+        if (len (result) > 0): # and result.count != 0 ):
+          raise Exception('Unicity Error for object type {} - unicity criteriaAND {} , unicityCriteriaOR {} '.format(classNameStr, unicityCriteria, unicityCriteriaOr))
 
 
     
@@ -152,6 +168,9 @@ def get_debug_all(request):
     str_debug += '* Files:\n'        
     for entry in request.files :
         str_debug = str_debug +  '\t* {} = {}\n'.format(entry, request.files[entry])       
+    str_debug += '* JSON:\n'                
+    if (request.json!= None):
+        str_debug = str_debug +  '\t* Json = {}\n'.format(request.json)       
     return str_debug    
 
 def checkAuthorization(request):
