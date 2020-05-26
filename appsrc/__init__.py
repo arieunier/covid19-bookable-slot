@@ -31,7 +31,6 @@ db = SQLAlchemy(app)
 #migrate = Migrate(app, db)
 
 
-utils.initDatabase(db)
 from appsrc import api_templates, routeusers, model
 
 #sapi_openinghoursdetails
