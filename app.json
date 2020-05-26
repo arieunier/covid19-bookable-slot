@@ -4,7 +4,7 @@
   "repository":"https://github.com/arieunier/heroku-demo",
   "keywords": ["python", "postgres", "redis", "connect"], 
   "scripts": {
-      "postdeploy": "echo creating database; python db_migrate.py migrate; python db_migrate.py upgrade"
+      "postdeploy": "echo creating database; python db_migrate.py db migrate; python db_migrate.py db upgrade"
     },
   "formation": {
     "web": {
@@ -29,18 +29,37 @@
         "value" : "DEBUG",
         "required" : true
       },
-
       "APPNAME" : {
         "Description" : "name of the application",
-        "value" : "yourdemo-cdo",
+        "value" : "Covid19-Queue-sBookableSystem",
         "required" : true
+      },
+      "DEFAULT_ADMIN_USERNAME" : {
+        "Description" : "Default admin username",
+        "value" : "admin",
+        "required" : true
+      },
+      "DEFAULT_ADMIN_EMAIL" : {
+        "Description" : "Default Admin Email",
+        "value" : "pleasechangeme@mail.com",
+        "required" : true
+      },
+      "DEFAULT_ADMIN_PASSWORD" : {
+        "Description" : "Default Admin Password",
+        "value" : "imserious",
+        "required" : true
+      },
+      "DEFAULT_API_URL" : {
+        "Description" : "Default API URI",
+        "value" : "/api/covid19",
+        "required" : false
       }
   },
 
   "environments": {
     "test": {
       "scripts": {
-        "test": "export PYTHONPATH=.:./libs:./appsrc; python appsrc/tests/main.py "
+        "test": "export PYTHONPATH=.:./libs:./appsrc; coverage run -m unittest discover"
       }
     }
   }
