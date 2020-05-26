@@ -10,3 +10,4 @@ flask_session
 flask_security
 redis
 ujson
+coverage
