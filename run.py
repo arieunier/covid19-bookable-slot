@@ -1,6 +1,6 @@
 from flask import Flask
 import json
-from app import app, db
+from appsrc import app, db
 from libs import logs, variables
 
 import  uuid
