@@ -11,6 +11,9 @@ from flask_login import UserMixin
 # USER MANAGEMENT PART
 from werkzeug.security import generate_password_hash, check_password_hash
 class User(UserMixin, db.Model):
+    __tablename__ = "tUser"
+    __table_args__ = {'extend_existing': True}
+    
     id = db.Column(db.String(36), primary_key=True, index=True, unique=True, nullable=False)
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
