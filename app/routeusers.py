@@ -1,10 +1,10 @@
 
 from flask_login import current_user, login_user, logout_user
 from model import User
-from appsrc import login_manager        
+from app import login_manager        
 from libs import utils, logs, variables
 from flask import Flask, jsonify, make_response, request
-from appsrc import app, db
+from app import app, db
 
 @login_manager.user_loader
 def load_user(id):

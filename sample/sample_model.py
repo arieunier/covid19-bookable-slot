@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from appsrc import db
+from app import db
 from libs import variables
 import uuid
 from flask_login import UserMixin

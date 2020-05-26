@@ -1,4 +1,4 @@
-from appsrc import app, db
+from app import app, db
 from flask_migrate import  Migrate
 from flask_migrate import MigrateCommand
 from flask_script import Manager
@@ -11,7 +11,7 @@ def purgeDb():
     db.drop_all()
     
 def fillDb():
-    from appsrc import model
+    from app import model
     from model import brand, company
 
     uid_com_1 = uuid.uuid4().__str__()

@@ -59,7 +59,7 @@
   "environments": {
     "test": {
       "scripts": {
-        "test": "export PYTHONPATH=.:./libs:./appsrc; coverage run -m unittest discover"
+        "test": "export PYTHONPATH=.:./libs:./app; coverage run -m unittest discover"
       }
     }
   }

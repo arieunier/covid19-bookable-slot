@@ -4,7 +4,7 @@ from datetime import datetime
 from flask import Flask, jsonify, make_response, request
 from flask_sqlalchemy import SQLAlchemy
 from model import brand, company
-from appsrc import app
+from app import app
 from libs import postgres, logs, utils
 
 

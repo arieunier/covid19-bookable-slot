@@ -1,10 +1,10 @@
-from appsrc import app
-from appsrc import db
+from app import app
+from app import db
 import unittest
 import variables 
 import uuid 
 
-from appsrc.tests import utils, test_login, test_addresses, test_openinghourstemplates, test_distributionowners, test_recurringslotstemplates, test_distributionpoints, test_bookableslots, test_bookedslots, test_covidtracking
+from app.tests import utils, test_login, test_addresses, test_openinghourstemplates, test_distributionowners, test_recurringslotstemplates, test_distributionpoints, test_bookableslots, test_bookedslots, test_covidtracking
 
 
 

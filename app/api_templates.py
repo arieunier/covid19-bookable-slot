@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime,  timedelta
 from flask import Flask, jsonify, make_response, request
 from flask_sqlalchemy import SQLAlchemy
-from appsrc import app, db
+from app import app, db
 import uuid 
 from libs import postgres, logs, utils, variables
 import traceback

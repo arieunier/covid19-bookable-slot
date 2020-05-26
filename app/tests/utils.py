@@ -1,9 +1,9 @@
-from appsrc.tests.main import appclient
+from app.tests.main import appclient
 import traceback
 from libs import variables
 import base64
 import uuid
-from appsrc import db
+from app import db
 from datetime import datetime, timedelta
 
 
