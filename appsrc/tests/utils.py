@@ -59,9 +59,15 @@ def fillDb():
     # adds a bookable slot
     BS1Id = uuid.uuid4().__str__()
     now = datetime.now()
-    BS = BookableSlot(id=BS1Id, dateStart=now - timedelta(minutes=1), dateEnd=now + timedelta(minutes=40), maxCapacity=10, refDistributionPointId=distPart, currentCapacity=0)
+    BS = BookableSlot(id=BS1Id, dateStart=now - timedelta(minutes=1), dateEnd=now + timedelta(minutes=40), maxCapacity=2, refDistributionPointId=distPart, currentCapacity=2)
     db.session.add(BS)
     db.session.commit()
+
+    BS11Id = uuid.uuid4().__str__()
+    BS11 = BookableSlot(id=BS11Id, dateStart=now + timedelta(hours=1), dateEnd=now + timedelta(hours=2), maxCapacity=10, refDistributionPointId=distPart, currentCapacity=10)
+    db.session.add(BS11)
+    db.session.commit()
+
 
     BS2Id = uuid.uuid4().__str__()
     BS2 = BookableSlot(id=BS2Id, dateStart=now + timedelta(hours=23), dateEnd=now + timedelta(hours=25), maxCapacity=10, refDistributionPointId=distPart, currentCapacity=0)
@@ -84,7 +90,7 @@ def HTTP_GET(uri, headers, params, data):
     try:
         result = appclient.get(uri,
             headers=headers,
-            query_string = params, )
+            query_string = params, json=data )
         return result, result.status_code
     except Exception as e:
         traceback.print_exc()
@@ -110,3 +116,32 @@ def HTTP_POST(uri, headers, params, data):
     except Exception as e:
         traceback.print_exc()
         return "Error", 500
+
+def HTTP_DEL(uri, headers, params, data):
+    try:
+        result = appclient.delete(uri,
+            headers=headers,
+            query_string = params, json=data)
+
+        return result, result.status_code
+    except Exception as e:
+        traceback.print_exc()
+        return "Error", 500
+
+def getDayFromStr(date):
+    today = datetime.strptime((datetime.now()).strftime(variables.DATE_PATTERN), variables.DATE_PATTERN)
+    return today
+
+def getCurrentDay():
+    today = datetime.strptime((datetime.now()).strftime(variables.DATE_PATTERN), variables.DATE_PATTERN)
+    return today
+
+def getTomorrowDT():
+    tomorrow = datetime.strptime((datetime.now() + timedelta(days=1)).strftime(variables.DATE_PATTERN), variables.DATE_PATTERN)
+    return tomorrow
+
+def getDateFromStr(str, pattern):
+    return datetime.strptime(str, pattern)
+
+def dateToStr(date, pattern):
+    return date.strftime(pattern)

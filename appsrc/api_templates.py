@@ -29,11 +29,11 @@ classLoader =  {
     }   
 
 
-##### UN  AUTHENTICATED ENDPOINTS
+##### UNAUTHENTICATED ENDPOINTS
 @app.route(variables.DEFAULT_API_URL + '/distributionowners/<id_>', methods=['GET'])
 @app.route(variables.DEFAULT_API_URL + '/distributionpoints/<id_>', methods=['GET'])
-@app.route(variables.DEFAULT_API_URL + '/bookableslots/<id_>', methods=['GET', 'DEL'])
-@app.route(variables.DEFAULT_API_URL + '/bookedslots/<id_>', methods=['DEL', 'GET'])
+@app.route(variables.DEFAULT_API_URL + '/bookableslots/<id_>', methods=['GET', 'DELETE'])
+@app.route(variables.DEFAULT_API_URL + '/bookedslots/<id_>', methods=['DELETE', 'GET', 'PUT'])
 def unauthenticatedRoutesGetOrPutOrDelById(id_):
   logs.logger.debug("UNAuthenticated -> {}-{} ".format(request.method, request.url))
   return __getOrPutOrDelById(current_user.is_authenticated, id_)
@@ -91,26 +91,40 @@ def __getOrPostAll(isAdmin):
         if (request.json == None):
           raise Exception('Request is empty')
         # checks content, name can't be null
+        received_request = []
+        try:
+          if (request.json is not None):
+            received_request = ujson.loads(request.json)
+        except Exception as e:
+          traceback.print_exc()
+
         received_request = utils.currateDictValue(ujson.loads(request.json), properClass.__curratedValue__ )
-        # check that there is not another openinghourstemplate with this name    
+        # check that there is not another objet with same information     
         utils.checkObjectUnicity(properClass, received_request)
         utils.checksReferencesId(properClass, received_request)      
         if (properClassName == "bookedslots"):
           # test if there is enough room for this slot
-          bookableSlot =  BookableSlot.query.filter_by(id=received_request['refBookableSlotId']).options(noloadOptions).first_or_404()
-          if (not ((bookableSlot.currentCapacity + received_request['numberOfPerson']) <= bookableSlot.maxCapacity)):
-            raise Exception("Not enough remaining place at this slot. Please select another one or reduce the number of person in the group")
+          bookableSlot =  BookableSlot.query.filter_by(id=received_request['refBookableSlotId']).first_or_404()
+          if (not ((bookableSlot.currentCapacity - received_request['numberOfPerson']) >= 0 )):
+            raise Exception("Not enough remaining place ({}) at this slot. Please select another one or reduce the number of person ({}) in the group. ".format(bookableSlot.currentCapacity,
+          received_request['numberOfPerson']))
           # test if the same person did not book on the same day in the same distribution point
-          bookableSlotDay = datetime.strptime(bookableSlot.dateStart.strftime(strftime(variables.DATE_PATTERN),variables.DATE_PATTERN))
+          bookableSlotDay = datetime.strptime(bookableSlot.dateStart.strftime(variables.DATE_PATTERN),variables.DATE_PATTERN)
+          
           nextDay = bookableSlotDay + timedelta(days=1)
-          filtersQueryAnd = []
-          filtersQueryAnd.append(BookableSlot.dateStart == bookableSlotDay) #no during current day
+          logs.logger.info("Interval Dates {} - {}".format(bookableSlotDay,  nextDay))
+
+          filtersQueryAnd = [] #BookableSlot
+          filtersQueryAnd.append(BookableSlot.dateStart >= bookableSlotDay) #no during current day
           filtersQueryAnd.append(BookableSlot.dateStart < nextDay) #before next day
-          filtersQueryAnd.append(refDistributionPointId == received_request['refDistributionPointId']) #same distribution
-          filtersQueryOr = []
-          filtersQueryOr.append(BookableSlot.email == received_request['email'])
-          filtersQueryOr.append(BookableSlot.telephone == received_request['telephone'])
-          checkDuplicates = BookableSlot.query.filter(and_(*filtersQueryAnd)).filter(or_(*filtersQueryOr)).all()
+          filtersQueryAnd.append(BookableSlot.refDistributionPointId == received_request['refDistributionPointId']) #same distribution
+          
+          filtersQueryOr = [] #BookedSlot
+          filtersQueryOr.append(BookedSlot.email == received_request['email'])
+          filtersQueryOr.append(BookedSlot.telephone == received_request['telephone'])
+          checkDuplicates = db.session.query(BookedSlot).filter(or_(*filtersQueryOr)).join(BookableSlot).filter(and_(*filtersQueryAnd)).all()
+
+          #checkDuplicates = BookableSlot.query.filter(and_(*filtersQueryAnd)).filter(or_(*filtersQueryOr)).all()
           if  len(checkDuplicates) != 0 :
             for entry in checkDuplicates:
               logs.logger.error("Duplicate entry found with {}".format(entry))
@@ -130,13 +144,10 @@ def __getOrPostAll(isAdmin):
             refDistributionPointId = received_request['refDistributionPointId'])
           db.session.add(newTemplate)
           # updates current capacity at the bookable slot
-          bookableSlot.currentCapacity += received_request['numberOfPerson']
-          flag_modified(bookableSlot, 'numberOfPerson')
-        elif (properClassName ==' covidtracking'):
-          # checks the distribution poitn exists
-          #checkDistributionPoint = DistributionPoint.query.filter_by(id=received_request['refDistributionPoint']).first_or_404()
-          # insert it
-          newTempate = properClass(id = uuid.uuid4().__str__(),
+          bookableSlot.currentCapacity -= received_request['numberOfPerson']
+          flag_modified(bookableSlot, 'currentCapacity')
+        elif (properClassName =='covidtracking'):
+          newTemplate = properClass(id = uuid.uuid4().__str__(),
                firstname = received_request['firstname'],
             lastname = received_request['lastname'],
             telephone = received_request['telephone'],
@@ -232,14 +243,22 @@ def __getOrPutOrDelById(isAdmin, id_):
           noloadOptions.append(noload(entry))
       # this route has a specific behavior for bookable slots & covid tracking, so we make sure we're not in on of these context
       if (properClassName not in ['bookableslots', 'covidtracking']):
+        # retrieve what should be given within the body
+        received_request = []
+        try:
+          if (request.json is not None):
+            received_request = ujson.loads(request.json)
+        except Exception as e:
+          traceback.print_exc()
+
         request_filter=[]
         request_filter.append(properClass.id == id_)
         # if object is a bookedslot, then the confirmationcode must be given also in the request
         if (properClassName == 'bookedslots'):
-          if ('confirmationCode' not in request.args ):
+          if ('confirmationCode' not in received_request ):
             raise Exception("Error, confirmation code is mandatory to display a booked slot.")
           else:
-            request_filter.append(properClass.confirmationCode == request.args.get('confirmationCode'))
+            request_filter.append(properClass.confirmationCode == received_request['confirmationCode'])
         
         #load objects with or without children records
         objects = properClass.query.filter(and_(*request_filter)).options(noloadOptions).first_or_404()
@@ -261,19 +280,26 @@ def __getOrPutOrDelById(isAdmin, id_):
         # first checks the ref id given
         utils.checksReferencesId(properClass, {"refDistributionPointId":id_})      
         request_filter.append(properClass.refDistributionPointId == id_)
+
         if ( properClassName == 'bookableslots'):  # bookable slot api has a specific field for filtering
-          
           if ('dateStart' not in request.args ):
             request_filter.append(properClass.dateStart >= utils.getCurrentDay())
           else:
             request_filter.append(properClass.dateStart >= utils.getDateFromStr(request.args.get('dateStart'), variables.DATE_PATTERN))
+        elif (properClassName == 'covidtracking'):
+           if ('dateStart' not in request.args ):
+            request_filter.append(properClass.created_on >= utils.getCurrentDay())
+            request_filter.append(properClass.created_on <= utils.getTomorrowDT())
+           else:
+             request_filter.append(properClass.created_on >= utils.getDateFromStr(request.args.get('dateStart'), variables.DATE_PATTERN))
+             request_filter.append(properClass.created_on <= (utils.getDateFromStr(request.args.get('dateStart'), variables.DATE_PATTERN) + timedelta(days=1)))
 
         # pass all attributes received in the and filter. 
         for entry in request.args:
           if ((request.args.get(entry) != None) & (request.args.get(entry) != '')):
             logs.logger.debug(entry)
             #be carefull if it is a date, do not pass it, it's done already for bookableslots
-            if (entry != 'dateStart' and properClassName != 'bookableslots'):
+            if (entry != 'dateStart'):
               request_filter.append(properClass.__dict__[entry] == (request.args.get(entry) ))
 
 
@@ -287,22 +313,47 @@ def __getOrPutOrDelById(isAdmin, id_):
       # checks object exists
       objectExist = properClass.query.filter_by(id=id_).first_or_404()
       # retrieve what should be given within the body
-      received_request = ujson.loads(request.json)
+      received_request = []
+      try:
+        if (request.json is not None):
+          received_request = ujson.loads(request.json)
+      except Exception as e:
+        traceback.print_exc()
       # make sure values received in the body of the request are allowed
       utils.checkReceivedContentAgainstForbiddenValues(received_request, properClass.__curratedValue__ )
       #depending on unicity criteria for each object, check if this update can lead to a duplicate
       possibleDuplicates = utils.validateUnicityOnUpdate(properClass, received_request, id_)
       # now updates the field and flag it as modified for the orm
       if (properClassName == 'bookedslots'):
-        if ('confirmationCode' not in request.args ):
+        if ('confirmationCode' not in received_request ):
           raise Exception("Error, confirmation code is mandatory to update a booked slot.")
         #checks the combinaison uid/code
         request_filter=[]          
-        request_filter.append(properClass.id == received_request['id'])
+        request_filter.append(properClass.id == id_)
         request_filter.append(properClass.confirmationCode == received_request['confirmationCode'])
-        BookedSlot.query.filter(and_(*request_filter)).first_or_404()
+        originalBslot  = BookedSlot.query.filter(and_(*request_filter)).first_or_404()
 
-
+        # tricky part
+        # presence of refBookableSlotId / refDistributionPointId will imply more checks. We will forbid these changes and reject, asking to delete the slot
+        currentRefBookableSlotId = originalBslot.refBookableSlotId
+        currentRefDistributionPointId = originalBslot.refDistributionPointId
+        if (('refBookableSlotId' in received_request and received_request['refBookableSlotId'] != currentRefBookableSlotId) 
+          or ('refDistributionPointId' in received_request and received_request['refDistributionPointId'] != currentRefDistributionPointId)):
+          raise Exception("Error: Changing refBookableSlotId or refDistributionPointId is forbidden, delete bookedlost and recreate it.")
+        
+        #if we change the number of person, or , we must check there is enough room
+        previousNbPerson = originalBslot.numberOfPerson
+        if (('numberOfPerson' in received_request and received_request['numberOfPerson'] !=  previousNbPerson)):
+          newValue = received_request['numberOfPerson']
+          # gets bookable slot
+          bookableSlot = BookableSlot.query.filter_by(id=originalBslot.refBookableSlotId).first_or_404()
+          newCapacity = bookableSlot.currentCapacity + previousNbPerson - newValue
+          logs.logger.info("old/newCapacity -> {}/{}".format(bookableSlot.currentCapacity, newCapacity))
+          if (not newCapacity >= 0):
+            raise Exception("Error: there isn't enough room left for this number of person.")
+          else:
+            bookableSlot.currentCapacity = newCapacity
+            flag_modified(bookableSlot, 'currentCapacity')
       for entry in received_request:
         logs.logger.debug("updating field ... {} --> {}".format(entry, received_request[entry]))
         objectExist.__dict__[entry] = received_request[entry]
@@ -313,26 +364,43 @@ def __getOrPutOrDelById(isAdmin, id_):
         result_dict = objectExist.serialize
       else:
         result_dict = objectExist.serialize_public
-    
-    
     else: #DEL WARNiNG
       #del
       logs.logger.info('delete detected')
       # two cases for delete : bookedlosts or bookableslots
       # make sure we have ALL the proper params, ie : bookableslot id + code given as part of the request
-      
+      received_request = []
       request_filter = []
-      if (properClassName == 'bookedslot'):
-        request_filter.append(properClass.id == received_request['id'])
+      if (properClassName == 'bookedslots'):
+        received_request = []
+        try:
+          if (request.json is not None):
+            received_request = ujson.loads(request.json)
+        except Exception as e:
+          traceback.print_exc()
+
+        request_filter.append(properClass.id == id_)
         request_filter.append(properClass.confirmationCode == received_request['confirmationCode'])
-        BookedSlot.query.filter(and_(*request_filter)).delete()
+        bSlot = BookedSlot.query.filter(and_(*request_filter)).first_or_404()
+        #increase capacity of related bookable slot
+        currentNbOfPerson = bSlot.numberOfPerson
+        # gets bookable slot
+        bookableSlot = BookableSlot.query.filter_by(id=bSlot.refBookableSlotId).first_or_404()
+        newCapacity = bookableSlot.currentCapacity + currentNbOfPerson 
+        logs.logger.info("old/newCapacity -> {}/{}".format(bookableSlot.currentCapacity, newCapacity))
+        bookableSlot.currentCapacity = newCapacity
+        flag_modified(bookableSlot, 'currentCapacity')
+        logs.logger.info("newCapacity -> {}".format(newCapacity))
+           
+        db.session.delete(bSlot)
+        
       else: # can only be bookableslots as per routes
         #loads it
-        bSlot = BookableSlot.query.filter_by(id=id_)
-        if len(bSlot.bookedSlots > 0 ):
-          raise Exception("Can't delete this bookable slot. Some people ({})already registered.".format(len(bSlot.bookedSlots)))
+        bSlot = BookableSlot.query.filter_by(id=id_).first()
+        if len(bSlot.bookedSlots) > 0:
+          raise Exception("Can't delete this bookable slot. Some people ({}) are already registered.".format(len(bSlot.bookedSlots)))
         else:
-          bSlot.delete()
+          db.session.delete(bSlot)
 
       db.session.commit()
 

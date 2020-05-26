@@ -559,7 +559,7 @@ class BookableSlot(db.Model):
             'dateEnd' : self.dateEnd.strftime(variables.DATETIME_PATTERN),
             'maxCapacity':self.maxCapacity,
             'currentCapacity':self.currentCapacity,
-            'refDistributionPoint':self.refDistributionPoint,
+            'refDistributionPointId':self.refDistributionPointId,
             'bookedSlots': [ item.serialize for item in self.bookedSlots ]
         }        
 
@@ -574,7 +574,6 @@ class BookedSlot(db.Model):
               'forbidenvalues': [None, ''] 
              } ,   
             'refBookableSlotId': {
-
               'isMandatory': True, 
               'forbidenvalues': [None, ''] 
              }  ,
@@ -607,7 +606,7 @@ class BookedSlot(db.Model):
     }
     __unicityCriteria__ = []  # 
     __unicityCriteriaOr__ = [] # unicity is telephone  OR email.
-    __publicNoLoadOptions__ = ['openingHoursTemplate', 'recurringSlotsTemplate']
+    __publicNoLoadOptions__ = []
     __checkReferenceFields__ = {'refDistributionPointId': DistributionPoint, 'refBookableSlotId': BookableSlot}    
     # mandatory
     id = db.Column(db.String(36), primary_key=True, index=True, unique=True, nullable=False)
@@ -640,6 +639,7 @@ class BookedSlot(db.Model):
             'telephone':self.telephone,
             'email':self.email,
             'numberOfPerson':self.numberOfPerson,
+            'confirmationCode':self.confirmationCode
         }      
 
 
@@ -702,7 +702,6 @@ class CovidTracking(db.Model):
     telephone =db.Column(db.String(255), index=False, unique=False, nullable=False )
     email =db.Column(db.String(255), index=False, unique=False, nullable=False )
     numberOfPerson =db.Column(db.Integer, index=False, unique=False, nullable=False )
-    confirmationCode =db.Column(db.String(8), index=False, unique=False, nullable=False )
 
     # references
     refDistributionPointId = db.Column(db.String(36), db.ForeignKey('tDistributionPoint.id'), index=False, nullable=False)

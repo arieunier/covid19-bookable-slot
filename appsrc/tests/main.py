@@ -4,7 +4,7 @@ import unittest
 import variables 
 import uuid 
 
-from appsrc.tests import utils, test_login, test_addresses, test_openinghourstemplates, test_distributionowners, test_recurringslotstemplates, test_distributionpoints, test_bookableslots
+from appsrc.tests import utils, test_login, test_addresses, test_openinghourstemplates, test_distributionowners, test_recurringslotstemplates, test_distributionpoints, test_bookableslots, test_bookedslots, test_covidtracking
 
 
 
@@ -29,12 +29,13 @@ def suite():
     #suite.addTest(unittest.makeSuite(test_recurringslotstemplates.TestCases))
     #suite.addTest(unittest.makeSuite(test_distributionowners.TestCases))    
     #suite.addTest(unittest.makeSuite(test_distributionpoints.TestCases))
-    suite.addTest(unittest.makeSuite(test_bookableslots.TestCases))
+    #suite.addTest(unittest.makeSuite(test_bookableslots.TestCases))
+    #suite.addTest(unittest.makeSuite(test_bookedslots.TestCases))
+    suite.addTest(unittest.makeSuite(test_covidtracking.TestCases))
     #TODO
     
     
     # distribution points
-    # bookable slots
     # bookedslotss
     # covidtracking
     return suite
