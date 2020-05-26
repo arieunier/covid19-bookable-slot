@@ -193,7 +193,7 @@ def checkAuthorization(request):
 
         return  True, decoded       
 
-def getDayFromStr():
+def getDayFromStr(date):
     today = datetime.strptime((datetime.now()).strftime(variables.DATE_PATTERN), variables.DATE_PATTERN)
     return today
 
