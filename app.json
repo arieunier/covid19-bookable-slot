@@ -59,7 +59,7 @@
   "environments": {
     "test": {
       "scripts": {
-        "test-setup": "echo creating database; python manage.py db migrate; python manage.py db upgrade",
+        "test-setup": "export PYTHONPATH=.:/app/libs:/app/appsrc; echo creating database; python manage.py db migrate; python manage.py db upgrade",
         "test": "export PYTHONPATH=.:/app/libs:/app/appsrc; python -m unittest discover"
       }
     }
