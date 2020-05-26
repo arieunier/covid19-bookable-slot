@@ -28,9 +28,9 @@ if (config.config.SESSION_TYPE =='redis' and config.config.SESSION_TYPE != ''):
 login_manager = LoginManager()
 login_manager.init_app(app)
 db = SQLAlchemy(app)
-#migrate = Migrate(app, db)
+#migrate = Migrate(app, db)à^
 
-import model  
+from app import model  
 import api_templates, routeusers
 
 #sapi_openinghoursdetails
