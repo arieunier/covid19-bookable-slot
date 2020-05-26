@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 
 def fillDb():
     print("Creating DB")
-    from model import User, OpeningHoursTemplate, RecurringSlotsTemplate, DailySchedule, Address, DistributionOwner, DistributionPoint, BookableSlot, BookedSlot
+    from appsrc.model import User, OpeningHoursTemplate, RecurringSlotsTemplate, DailySchedule, Address, DistributionOwner, DistributionPoint, BookableSlot, BookedSlot
 
     db.drop_all()
     db.create_all()

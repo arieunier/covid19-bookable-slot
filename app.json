@@ -4,7 +4,7 @@
   "repository":"https://github.com/arieunier/heroku-demo",
   "keywords": ["python", "postgres", "redis", "connect"], 
   "scripts": {
-      "postdeploy": "echo creating database; python db_migrate.py db migrate; python db_migrate.py db upgrade"
+      "postdeploy": "echo creating database; python manage.py db migrate; python manage.py db upgrade"
     },
   "formation": {
     "web": {
@@ -59,7 +59,7 @@
   "environments": {
     "test": {
       "scripts": {
-        "test": "export PYTHONPATH=.:./libs:./app; coverage run -m unittest discover"
+        "test": "export PYTHONPATH=.:/app/libs:/app/appsrc; python -m unittest discover"
       }
     }
   }
