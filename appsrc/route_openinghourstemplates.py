@@ -20,7 +20,7 @@ from appsrc import route_generic
 @app.route(variables.DEFAULT_API_URL + '/openinghourstemplates',methods=['GET','POST'])
 @login_required
 def get_post_openinghourstemplate():
-    return route_generic.genericGetPostWithAuthentications('/openinghourstemplates', current_user.is_authenticated)
+    return route_generic.genericGetPost('/openinghourstemplates', current_user.is_authenticated)
 
 @app.route(variables.DEFAULT_API_URL + '/openinghourstemplates/<id_>',methods=['PUT', 'GET'])
 @login_required

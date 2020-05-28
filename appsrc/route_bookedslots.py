@@ -23,4 +23,4 @@ def get_unauthenticated_bookedslots_byId(id_):
 @app.route(variables.DEFAULT_API_URL + '/bookedslots', methods=['POST'])
 def post_unauthenticated_bookedslot():
     logs.logger.error(utils.get_debug_all(request))
-    return route_generic.genericGetPostWithAuthentications("/bookedslots",current_user.is_authenticated)
+    return route_generic.genericGetPost("/bookedslots",current_user.is_authenticated)

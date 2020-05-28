@@ -23,7 +23,7 @@ def get_unauthenticated_distributionowners_byId(id_):
 @app.route(variables.DEFAULT_API_URL + '/distributionowners',methods=['GET','POST'])
 @login_required
 def get_post_distributionowners():
-    return route_generic.genericGetPostWithAuthentications("/distributionowners",current_user.is_authenticated)
+    return route_generic.genericGetPost("/distributionowners",current_user.is_authenticated)
 
 @app.route(variables.DEFAULT_API_URL + '/distributionowners/<id_>',methods=['PUT', 'GET'])
 @login_required

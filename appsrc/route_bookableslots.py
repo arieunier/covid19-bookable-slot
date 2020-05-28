@@ -18,12 +18,12 @@ from appsrc import route_generic
 
 @app.route(variables.DEFAULT_API_URL + '/bookableslots', methods=['GET'])
 def get_unauthenticated_bookableslots():
-    return route_generic.genericGetPostWithAuthentications("/bookableslots",current_user.is_authenticated)
+    return route_generic.genericGetPost("/bookableslots",current_user.is_authenticated)
 
 @app.route(variables.DEFAULT_API_URL + '/bookableslots', methods=['POST'])
 @login_required
 def post_authenticated_bookableslots():
-    return route_generic.genericGetPostWithAuthentications("/bookableslots",current_user.is_authenticated)
+    return route_generic.genericGetPost("/bookableslots",current_user.is_authenticated)
 
 @app.route(variables.DEFAULT_API_URL + '/bookableslots/<id_>', methods=['GET'])
 def get_unauthenticated_bookableslots_byId(id_):

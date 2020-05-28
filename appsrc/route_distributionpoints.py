@@ -18,7 +18,7 @@ from appsrc import route_generic
 
 @app.route(variables.DEFAULT_API_URL + '/distributionpoints', methods=['GET']) 
 def get_unauthenticated_distributionpoints():   
-    return route_generic.genericGetPostWithAuthentications("/distributionpoints",current_user.is_authenticated)
+    return route_generic.genericGetPost("/distributionpoints",current_user.is_authenticated)
 
 @app.route(variables.DEFAULT_API_URL + '/distributionpoints/<id_>', methods=['GET'])
 def get_unauthenticated_distributionpoints_byId(id_):
@@ -28,7 +28,7 @@ def get_unauthenticated_distributionpoints_byId(id_):
 @app.route(variables.DEFAULT_API_URL + '/distributionpoints',methods=['GET','POST'])
 @login_required
 def get_post_distributionpoints():
-    return route_generic.genericGetPostWithAuthentications("/distributionpoints",current_user.is_authenticated)
+    return route_generic.genericGetPost("/distributionpoints",current_user.is_authenticated)
 
 @app.route(variables.DEFAULT_API_URL + '/distributionpoints/<id_>',methods=['PUT', 'GET'])
 @login_required

@@ -157,7 +157,7 @@ def __insertBookableSlot(properClass, received_request):
     db.session.commit()
     return newTemplate
 
-def __genericGet(properClass, properClassName, uri, isAdmin):
+def __GET__Generic(properClass, properClassName, uri, isAdmin):
     request_filter = []
     if (properClassName == 'distributionpoints'):
         if (not 'refDistributionOwnerId' in request.args or request.args.get('refDistributionOwnerId') == '' or  request.args.get('refDistributionOwnerId') == None):
@@ -188,7 +188,7 @@ def __genericGet(properClass, properClassName, uri, isAdmin):
 
     return make_response(jsonify(result_dict), 200)
 
-def __genericPost(properClass, properClassName, uri, isAdmin):
+def __POST__Generic(properClass, properClassName, uri, isAdmin):
     try:
         if (request.json == None):
             raise Exception('Request is empty')
@@ -216,7 +216,7 @@ def __genericPost(properClass, properClassName, uri, isAdmin):
         traceback.print_exc()
         return utils.returnResponse(jsonify({'Error':e.__str__()}), 500)
 
-def __genericGetById(properClass, properClassName, uri, isAdmin, id_):  
+def __GET_ById__Generic(properClass, properClassName, uri, isAdmin, id_):  
     noloadOptions=[]
     if (isAdmin == False): #we wont load unecessary data so we use the publicnoload attribut to avoid loading children records
         for entry in properClass.__publicNoLoadOptions__:
@@ -256,7 +256,7 @@ def __genericGetById(properClass, properClassName, uri, isAdmin, id_):
     logs.logger.info(result_dict)
     return make_response(jsonify(result_dict), 200)
 
-def __genericPutById(properClass, properClassName, uri, isAdmin, id_):
+def __PUT_ById__Generic(properClass, properClassName, uri, isAdmin, id_):
     # checks object exists
     objectExist = properClass.query.filter_by(id=id_).first_or_404()
     # retrieve what should be given within the body
@@ -286,7 +286,7 @@ def __genericPutById(properClass, properClassName, uri, isAdmin, id_):
     logs.logger.info(result_dict)
     return make_response(jsonify(result_dict), 200)
 
-def __putBookedSlotsById(properClass, properClassName, uri, isAdmin, id_):
+def __PUT_ById__BookedSlots(properClass, properClassName, uri, isAdmin, id_):
     # method is PUT
     # checks object exists
     objectExist = properClass.query.filter_by(id=id_).first_or_404()
@@ -346,7 +346,7 @@ def __putBookedSlotsById(properClass, properClassName, uri, isAdmin, id_):
     logs.logger.info(result_dict)
     return make_response(jsonify(result_dict), 200)
 
-def __getCovidTracking(properClass, properClassName, uri, isAdmin):
+def __GET_ByRefId__CovidTracking(properClass, properClassName, uri, isAdmin):
     request_filter = []
     # both covid tracking & bookable slots endpoints are using the distribution id as filter, given in the url
      # first checks the ref id given
@@ -385,7 +385,7 @@ def __getCovidTracking(properClass, properClassName, uri, isAdmin):
     logs.logger.info(result_dict)
     return make_response(jsonify(result_dict), 200)
 
-def __getBookableSlots(properClass, properClassName, uri, isAdmin):
+def __GET_ByRefId__BookableSlots(properClass, properClassName, uri, isAdmin):
     request_filter = []
     # both covid tracking & bookable slots endpoints are using the distribution id as filter, given in the url
     # first checks the ref id given
@@ -421,6 +421,42 @@ def __getBookableSlots(properClass, properClassName, uri, isAdmin):
     logs.logger.info(result_dict)
     return make_response(jsonify(result_dict), 200)
 
+def __DELETE_ById__BookedSlots(properClass, properClassName, uri, isAdmin, id_):
+    received_request = []
+    try:
+        if (request.json is not None):
+            received_request = ujson.loads(request.json)
+    except Exception as e:
+        traceback.print_exc()
+    request_filter = []
+    request_filter.append(properClass.id == id_)
+    request_filter.append(properClass.confirmationCode == received_request['confirmationCode'])
+    bSlot = BookedSlot.query.filter(and_(*request_filter)).first_or_404()
+    #increase capacity of related bookable slot
+    currentNbOfPerson = bSlot.numberOfPerson
+    # gets bookable slot
+    bookableSlot = BookableSlot.query.filter_by(id=bSlot.refBookableSlotId).first_or_404()
+    newCapacity = bookableSlot.currentCapacity + currentNbOfPerson 
+    logs.logger.info("old/newCapacity -> {}/{}".format(bookableSlot.currentCapacity, newCapacity))
+    bookableSlot.currentCapacity = newCapacity
+    flag_modified(bookableSlot, 'currentCapacity')
+    logs.logger.info("newCapacity -> {}".format(newCapacity))
+    
+    db.session.delete(bSlot)
+    db.session.commit()
+    result_dict=[{'Result':'Object deleted successfully'}]
+    return make_response(jsonify(result_dict), 200)
+
+def __DELETE_ById__BookableSlots(properClass, properClassName, uri, isAdmin, id_):
+    bSlot = BookableSlot.query.filter_by(id=id_).first()
+    if len(bSlot.bookedSlots) > 0:
+        raise Exception("Can't delete this bookable slot. Some people ({}) are already registered.".format(len(bSlot.bookedSlots)))
+    else:
+        db.session.delete(bSlot)
+    db.session.commit()
+    result_dict=[{'Result':'Object deleted successfully'}]
+    return make_response(jsonify(result_dict), 200)
+
 # will be used by the functions bellow to dynamically use the proper functions
 functionLoader =  {
     "/openinghourstemplates" : 
@@ -428,116 +464,118 @@ functionLoader =  {
             "class" : OpeningHoursTemplate, 
             "classname" : "openinghourstemplates", 
             "insert":__insertOpeningHoursTemplate,
-            "GET":__genericGet,
-            "POST": __genericPost
+            "GET":__GET__Generic,
+            "POST": __POST__Generic
         },
     "/recurringslotstemplates" : 
         { 
             "class":  RecurringSlotsTemplate ,
             "classname" : "recurringslotstemplates", 
             "insert": __insertRecurringSlotsTemplate,
-            "GET":__genericGet,
-            "POST": __genericPost
+            "GET":__GET__Generic,
+            "POST": __POST__Generic
         },
     "/addresses":
         {   
             "class" : Address,
             "classname" : "addresses", 
             "insert": __insertAddresses,
-            "GET":__genericGet,
-            "POST": __genericPost
+            "GET":__GET__Generic,
+            "POST": __POST__Generic
         },
     "/distributionowners" : 
         {   
             "class" : DistributionOwner,
             "classname" : "distributionowners", 
             "insert": __insertDistributionOwner,
-            "GET":__genericGet,
-            "POST": __genericPost
+            "GET":__GET__Generic,
+            "POST": __POST__Generic
         },
     "/distributionpoints" : 
         {   
             "class" : DistributionPoint,
             "classname" : "distributionpoints",             
             "insert": __insertDistributionPoint,
-            "GET":__genericGet,
-            "POST": __genericPost
+            "GET":__GET__Generic,
+            "POST": __POST__Generic
         },            
     "/bookableslots" : 
         {   
             "class" : BookableSlot,
             "classname" : "bookableslots",             
-            "GET": __getBookableSlots,
+            "GET": __GET_ByRefId__BookableSlots,
             "insert": __insertBookableSlot,
-            "POST": __genericPost
+            "POST": __POST__Generic
         },
     "/bookedslots": 
         {   
             "class" : BookedSlot,
             "classname" : "bookedslots",             
             "insert": __insertBookedSlots,
-            "GET":__genericGet,
-            "POST": __genericPost
+            "GET":__GET__Generic,
+            "POST": __POST__Generic
         },
     '/covidtracking':
         {   
             "class" :  CovidTracking,
             "classname" : "covidtracking",             
             "insert": __insertCovidTracking,
-            "GET":__getCovidTracking,
-            "POST": __genericPost
+            "GET":__GET_ByRefId__CovidTracking,
+            "POST": __POST__Generic
         },   
     '/distributionowners/<id_>': 
         {
             "class" :  DistributionOwner,
             "classname" : "distributionowners",             
-            "PUT": __genericPutById,
-            "GET": __genericGetById,
+            "PUT": __PUT_ById__Generic,
+            "GET": __GET_ById__Generic,
         },
     '/openinghourstemplates/<id_>': 
         {
             "class" :  OpeningHoursTemplate,
             "classname" : "openinghourstemplates",             
-            "PUT": __genericPutById,
-            "GET": __genericGetById,
+            "PUT": __PUT_ById__Generic,
+            "GET": __GET_ById__Generic,
         },
     '/recurringslotstemplates/<id_>': 
         {
             "class" :  RecurringSlotsTemplate,
             "classname" : "recurringslotstemplates",             
-            "PUT": __genericPutById,
-            "GET": __genericGetById,
+            "PUT": __PUT_ById__Generic,
+            "GET": __GET_ById__Generic,
         },
     '/addresses/<id_>': 
         {
             "class" :  Address,
             "classname" : "addresses",             
-            "PUT": __genericPutById,
-            "GET": __genericGetById,
+            "PUT": __PUT_ById__Generic,
+            "GET": __GET_ById__Generic,
         },
     '/distributionpoints/<id_>': 
         {
             "class" :  DistributionPoint,
             "classname" : "distributionpoints",             
-            "PUT": __genericPutById,
-            "GET": __genericGetById,
+            "PUT": __PUT_ById__Generic,
+            "GET": __GET_ById__Generic,
         },
     '/bookableslots/<id_>': 
         {
             "class" :  BookableSlot,
             "classname" : "bookableslots",             
-            "GET": __genericGetById
+            "GET": __GET_ById__Generic,
+            "DELETE": __DELETE_ById__BookableSlots
         },
     '/bookedslots/<id_>': 
         {
             "class" :  BookedSlot,
             "classname" : "bookedslots",             
-            "PUT": __putBookedSlotsById,
-            "GET": __genericGetById,
+            "PUT": __PUT_ById__BookedSlots,
+            "GET": __GET_ById__Generic,
+            "DELETE": __DELETE_ById__BookedSlots
         },                
     }
 
-def genericGetPostWithAuthentications(uri, isAdmin):
+def genericGetPost(uri, isAdmin):
     try:
         logs.logger.debug(utils.get_debug_all(request)) 
         # check method type
@@ -548,11 +586,11 @@ def genericGetPostWithAuthentications(uri, isAdmin):
         if request.method == 'GET':
             if ('GET' in functionLoader[uri]):
                 return functionLoader[uri]['GET'](properClass, properClassName, uri, isAdmin)
-            return __genericGet(properClass, properClassName, uri, isAdmin)
+            return __GET__Generic(properClass, properClassName, uri, isAdmin)
         else:
             if ('POST' in functionLoader[uri]):
                 return functionLoader[uri]['POST'](properClass, properClassName, uri, isAdmin)
-            return __genericPost(properClass, properClassName, uri, isAdmin)
+            return __POST__Generic(properClass, properClassName, uri, isAdmin)
         """
     except werkzeug.exceptions.NotFound as e:
         traceback.print_exc()
@@ -568,56 +606,8 @@ def genericGetPutDelById(uri, isAdmin, id_):
     properClass = functionLoader[uri]['class']
     properClassName = functionLoader[uri]['classname']
     logs.logger.debug("properclass={}".format(properClassName))
+    return functionLoader[uri][request.method](properClass, properClassName, uri, isAdmin, id_)
 
-
-    if request.method == 'GET':
-        return functionLoader[uri][request.method](properClass, properClassName, uri, isAdmin, id_)
-    elif request.method == 'PUT':
-        return functionLoader[uri][request.method](properClass, properClassName, uri, isAdmin, id_)
-    else: #DEL WARNiNG
-      #del
-      logs.logger.info('delete detected')
-      # two cases for delete : bookedlosts or bookableslots
-      # make sure we have ALL the proper params, ie : bookableslot id + code given as part of the request
-      received_request = []
-      request_filter = []
-      if (properClassName == 'bookedslots'):
-        received_request = []
-        try:
-          if (request.json is not None):
-            received_request = ujson.loads(request.json)
-        except Exception as e:
-          traceback.print_exc()
-
-        request_filter.append(properClass.id == id_)
-        request_filter.append(properClass.confirmationCode == received_request['confirmationCode'])
-        bSlot = BookedSlot.query.filter(and_(*request_filter)).first_or_404()
-        #increase capacity of related bookable slot
-        currentNbOfPerson = bSlot.numberOfPerson
-        # gets bookable slot
-        bookableSlot = BookableSlot.query.filter_by(id=bSlot.refBookableSlotId).first_or_404()
-        newCapacity = bookableSlot.currentCapacity + currentNbOfPerson 
-        logs.logger.info("old/newCapacity -> {}/{}".format(bookableSlot.currentCapacity, newCapacity))
-        bookableSlot.currentCapacity = newCapacity
-        flag_modified(bookableSlot, 'currentCapacity')
-        logs.logger.info("newCapacity -> {}".format(newCapacity))
-           
-        db.session.delete(bSlot)
-        
-      else: # can only be bookableslots as per routes
-        #loads it
-        bSlot = BookableSlot.query.filter_by(id=id_).first()
-        if len(bSlot.bookedSlots) > 0:
-          raise Exception("Can't delete this bookable slot. Some people ({}) are already registered.".format(len(bSlot.bookedSlots)))
-        else:
-          db.session.delete(bSlot)
-
-      db.session.commit()
-
-      result_dict=[{'Result':'Object deleted successfully'}]
-    logs.logger.info(result_dict)
-
-    return make_response(jsonify(result_dict), 200)
   except werkzeug.exceptions.NotFound as e:
     traceback.print_exc()
     return utils.returnResponse("Requested resource does not exist", 404)    

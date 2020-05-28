@@ -21,10 +21,10 @@ from appsrc import route_generic
 @login_required
 def get_covidtracking():
     logs.logger.debug("Authenticated -> {}-{} ".format(request.method, request.url))
-    return route_generic.genericGetPostWithAuthentications("/covidtracking",current_user.is_authenticated)
+    return route_generic.genericGetPost("/covidtracking",current_user.is_authenticated)
 
 
 @app.route(variables.DEFAULT_API_URL + '/covidtracking', methods=['POST']) 
 def post_covidtracking():   
     logs.logger.debug("Authenticated -> {}-{} ".format(request.method, request.url))
-    return route_generic.genericGetPostWithAuthentications("/covidtracking",current_user.is_authenticated)
+    return route_generic.genericGetPost("/covidtracking",current_user.is_authenticated)

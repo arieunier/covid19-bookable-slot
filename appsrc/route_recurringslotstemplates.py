@@ -20,7 +20,7 @@ from appsrc import route_generic
 @app.route(variables.DEFAULT_API_URL + '/recurringslotstemplates',methods=['GET','POST'])
 @login_required
 def get_post_recurringslotstemplate():
-    return route_generic.genericGetPostWithAuthentications("/recurringslotstemplates",current_user.is_authenticated)
+    return route_generic.genericGetPost("/recurringslotstemplates",current_user.is_authenticated)
 
 @app.route(variables.DEFAULT_API_URL + '/recurringslotstemplates/<id_>',methods=['PUT', 'GET'])
 @login_required
