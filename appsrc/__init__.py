@@ -10,7 +10,7 @@ from flask_login import LoginManager
 import uuid
 from flask_session import Session 
 from datetime import timedelta
- 
+from flasgger import Swagger
 
 
 logs.logger_init(filename="app.log")
@@ -28,10 +28,13 @@ if (config.config.SESSION_TYPE =='redis' and config.config.SESSION_TYPE != ''):
 login_manager = LoginManager()
 login_manager.init_app(app)
 db = SQLAlchemy(app)
+swagger = Swagger(app)
 #migrate = Migrate(app, db)
 
 
-from appsrc import api_templates, routeusers, model
+from appsrc import route_users, model
+#from appsrc import api_templates, route_bookedslots, route_bookableslots
+from appsrc import route_addresses, route_openinghourstemplates, route_distributionowners, route_distributionpoints, route_recurringslotstemplates, route_covidtracking, route_bookableslots, route_bookedslots
 
 #sapi_openinghoursdetails
-#  api_openinghourstemplate, api_recurringslotstemplate,
+#  api_openinghourstemplate, api_recurringslotstemplate,    

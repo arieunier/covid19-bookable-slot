@@ -235,6 +235,7 @@ def getForm(default, request, argName):
 
 def get_debug_all(request):
     str_debug = '* url: {}\n* method:{}\n'.format(request.url, request.method)
+    
     str_debug += '* Args:\n'
     for entry in request.args:
         str_debug = str_debug + '\t* {} = {}\n'.format(entry, request.args[entry])

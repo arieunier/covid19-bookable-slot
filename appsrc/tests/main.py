@@ -23,15 +23,17 @@ def suite():
     suite = unittest.TestSuite()
     
     #DONE
-    #suite.addTest(unittest.makeSuite(test_login.TestCases))
+    
     #suite.addTest(unittest.makeSuite(test_addresses.TestCases))
-    #suite.addTest(unittest.makeSuite(test_openinghourstemplates.TestCases))
+    #suite.addTest(unittest.makeSuite(test_openinghourstemplates.TestCases))    
     #suite.addTest(unittest.makeSuite(test_recurringslotstemplates.TestCases))
     #suite.addTest(unittest.makeSuite(test_distributionowners.TestCases))    
     #suite.addTest(unittest.makeSuite(test_distributionpoints.TestCases))
-    #suite.addTest(unittest.makeSuite(test_bookableslots.TestCases))
+    #ssuite.addTest(unittest.makeSuite(test_covidtracking.TestCases))
+    #suite.addTest(unittest.makeSuite(test_login.TestCases))
+    suite.addTest(unittest.makeSuite(test_bookableslots.TestCases))
     #suite.addTest(unittest.makeSuite(test_bookedslots.TestCases))
-    suite.addTest(unittest.makeSuite(test_covidtracking.TestCases))
+    #
     #TODO
     
     

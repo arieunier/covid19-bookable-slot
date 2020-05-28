@@ -29,7 +29,7 @@ class TestCases(unittest.TestCase):
         self.assertEqual(code, 200)
         distributionPointId = result.json[0]['id']        
         # access bslots with correct dp, no date start given, will default to current
-        result, code = appsrc.tests.utils.HTTP_GET(variables.DEFAULT_API_URL + '/bookableslots/' + distributionPointId, {}, {}, {})
+        result, code = appsrc.tests.utils.HTTP_GET(variables.DEFAULT_API_URL + '/bookableslots', {}, {'refDistributionPointId':distributionPointId}, {})
         self.assertEqual(code, 200)
         self.assertEqual(len(result.json), 3)
         firstBookableSlotId = result.json[0]['id']
@@ -81,7 +81,7 @@ class TestCases(unittest.TestCase):
         result, code = appsrc.tests.utils.HTTP_PUT(variables.DEFAULT_API_URL + '/bookedslots/' + bookedSlotId, {}, {}, ujson.dumps({'numberOfPerson':2, 'confirmationCode':bookedSlotCode}))
         self.assertEqual(code, 200)
         #make sure capacity has decreased
-        result, code = appsrc.tests.utils.HTTP_GET(variables.DEFAULT_API_URL + '/bookableslots/' + distributionPointId, {}, {}, {})
+        result, code = appsrc.tests.utils.HTTP_GET(variables.DEFAULT_API_URL + '/bookableslots' , {}, {'refDistributionPointId': distributionPointId}, {})
         self.assertEqual(0, result.json[0]['currentCapacity'])
 
 
@@ -91,7 +91,7 @@ class TestCases(unittest.TestCase):
 
 
         #make sure capacity has decreased
-        result, code = appsrc.tests.utils.HTTP_GET(variables.DEFAULT_API_URL + '/bookableslots/' + distributionPointId, {}, {}, {})
+        result, code = appsrc.tests.utils.HTTP_GET(variables.DEFAULT_API_URL + '/bookableslots' , {}, {'refDistributionPointId': distributionPointId}, {})
         self.assertNotEqual(result.json[0]['maxCapacity'], result.json[0]['currentCapacity'])
 
         #insert a second booked slot with same info, should fail because this person already has a booked slot
@@ -112,7 +112,7 @@ class TestCases(unittest.TestCase):
         self.assertEqual(code, 200)
 
         #check slot capacity
-        result, code = appsrc.tests.utils.HTTP_GET(variables.DEFAULT_API_URL + '/bookableslots/' + distributionPointId, {}, {}, {})                
+        result, code = appsrc.tests.utils.HTTP_GET(variables.DEFAULT_API_URL + '/bookableslots' , {}, {'refDistributionPointId': distributionPointId}, {})                
         self.assertEqual(2, result.json[0]['currentCapacity'])
 
     

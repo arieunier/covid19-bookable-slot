@@ -28,6 +28,59 @@ class User(UserMixin, db.Model):
     def __repr__(self):
         return '<User {}>'.format(self.username)   
 
+"""
+@dataclass
+class SlotsGenerations(db.Model):
+  __tablename__ = "tSlotsGenerations"
+  __jsonName__ = "SlotsGenerations"
+  __curratedValue__ = {}
+  __unicityCriteria__ = []  
+  __unicityCriteriaOr__ = []
+  __publicNoLoadOptions__ = []
+  __checkReferenceFields__ = {}  
+
+  # mandatory
+  id = db.Column(db.String(36), primary_key=True, index=True, unique=True, nullable=False)
+  #fiels  
+  dateStart = db.Column(db.DateTime, server_default=db.func.now())
+  dateEnd = db.Column(db.DateTime, server_default=db.func.now())
+  jobStatus =db.Column(db.String(255), index=False, unique=False, nullable=False )
+  rawResult=db.Column(db.Text(), index=False, unique=False, nullable=True )
+  errorMessage=db.Column(db.String(255), index=False, unique=False, nullable=True )
+  # references
+  refDistributionOwnerId = db.Column(db.String(36), db.ForeignKey('tDistributionOwner.id'), index=False, nullable=False)
+  refDistributionPointId = db.Column(db.String(36), db.ForeignKey('tDistributionPoint.id'), index=False, nullable=False)
+  # traceability
+  created_on = db.Column(db.DateTime, server_default=db.func.now())
+  updated_on = db.Column(db.DateTime, server_default=db.func.now(), server_onupdate=db.func.now())
+
+  @property
+  def serialize_simple(self):
+        return {
+            'id': self.id,
+            'dateStart': self.dateStart,
+            'dateEnd': self.dateEnd,
+            'jobStatus': self.jobStatus,
+            'refDistributionOwnerId':self.refDistributionOwnerId,
+            'refDistributionPointId':self.refDistributionPointId
+        }  
+
+  @property
+  def serialize_full(self):
+        return {
+            'id': self.id,
+            'created_on' : self.created_on.strftime(variables.DATETIME_PATTERN),
+            'updated_on' : self.updated_on.strftime(variables.DATETIME_PATTERN),
+            'dateStart': self.dateStart,
+            'dateEnd': self.dateEnd,
+            'jobStatus': self.jobStatus,
+            'refDistributionOwnerId':self.refDistributionOwnerId,
+            'refDistributionPointId':self.refDistributionPointId,
+            'errorMessage':self.errorMessage,
+            'rawResult':self.rawResult
+        }  
+
+"""
 
 @dataclass
 class RecurringSlotsTemplate(db.Model):

@@ -41,7 +41,7 @@ class TestCases(unittest.TestCase):
             ujson.dumps({'refDistributionPointId':'unknown', 'firstname':'aze','lastname':'aze','telephone':'+123123131','email':'test@test.com','numberOfPerson':5}))
         self.assertEqual(code, 500)
         #tries to get the data, must fail
-        result, code = appsrc.tests.utils.HTTP_GET(variables.DEFAULT_API_URL + '/covidtracking/' + distributionPointId, {}, {},{})
+        result, code = appsrc.tests.utils.HTTP_GET(variables.DEFAULT_API_URL + '/covidtracking', {}, {'refDistributionPointId':distributionPointId},{})
         self.assertEqual(code, 401)
 
         # now gets the admin account to retrieve all data
@@ -51,12 +51,12 @@ class TestCases(unittest.TestCase):
         self.assertEqual(code, 200)
         
         # no start date, gets current day
-        result, code = appsrc.tests.utils.HTTP_GET(variables.DEFAULT_API_URL + '/covidtracking/' + distributionPointId, {'cookie':session_cookie}, {},{})
+        result, code = appsrc.tests.utils.HTTP_GET(variables.DEFAULT_API_URL + '/covidtracking' , {'cookie':session_cookie}, {'refDistributionPointId':distributionPointId},{})
         self.assertEqual(code, 200)
         self.assertEqual(1, len(result.json))
         # with start date, gets nothing, date in the future
-        result, code = appsrc.tests.utils.HTTP_GET(variables.DEFAULT_API_URL + '/covidtracking/' + distributionPointId, {'cookie':session_cookie}, 
-            {'dateStart': appsrc.tests.utils.dateToStr(appsrc.tests.utils.getTomorrowDT(), variables.DATE_PATTERN)},{})
+        result, code = appsrc.tests.utils.HTTP_GET(variables.DEFAULT_API_URL + '/covidtracking' , {'cookie':session_cookie}, 
+            {'dateStart': appsrc.tests.utils.dateToStr(appsrc.tests.utils.getTomorrowDT(), variables.DATE_PATTERN), 'refDistributionPointId':distributionPointId},{})
         self.assertEqual(code, 200)
         self.assertEqual(0, len(result.json))
 

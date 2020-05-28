@@ -1,3 +1,6 @@
+"""
+NOT USED ANYMORE  BUT KEPT JUST IN CASE ..
+
 from dataclasses import dataclass
 from datetime import datetime,  timedelta
 from flask import Flask, jsonify, make_response, request
@@ -32,22 +35,43 @@ classLoader =  {
 ##### UNAUTHENTICATED ENDPOINTS
 @app.route(variables.DEFAULT_API_URL + '/distributionowners/<id_>', methods=['GET'])
 @app.route(variables.DEFAULT_API_URL + '/distributionpoints/<id_>', methods=['GET'])
-@app.route(variables.DEFAULT_API_URL + '/bookableslots/<id_>', methods=['GET', 'DELETE'])
-@app.route(variables.DEFAULT_API_URL + '/bookedslots/<id_>', methods=['DELETE', 'GET', 'PUT'])
+#@app.route(variables.DEFAULT_API_URL + '/bookableslots/<id_>', methods=['GET', 'DELETE'])
+#@app.route(variables.DEFAULT_API_URL + '/bookedslots/<id_>', methods=['DELETE', 'GET', 'PUT'])
 def unauthenticatedRoutesGetOrPutOrDelById(id_):
   logs.logger.debug("UNAuthenticated -> {}-{} ".format(request.method, request.url))
   return __getOrPutOrDelById(current_user.is_authenticated, id_)
 
 @app.route(variables.DEFAULT_API_URL + '/distributionpoints', methods=['GET'])
-@app.route(variables.DEFAULT_API_URL + '/bookedslots', methods=['POST'])
+#s@app.route(variables.DEFAULT_API_URL + '/bookedslots', methods=['POST'])
 @app.route(variables.DEFAULT_API_URL + '/covidtracking', methods=['POST'])
 def unauthenticatedRoutesGetOrPostAll():
   logs.logger.debug(current_user.is_authenticated)
   logs.logger.debug("UNAuthenticated -> {}-{} ".format(request.method, request.url))
   return __getOrPostAll(current_user.is_authenticated)
 
-
 ##### AUTHENTICATED ENDPOINTS
+@app.route(variables.DEFAULT_API_URL + '/distributionowners',methods=['GET','POST'])
+@app.route(variables.DEFAULT_API_URL + '/openinghourstemplates',methods=['GET','POST'])
+@app.route(variables.DEFAULT_API_URL + '/recurringslotstemplates',methods=['GET','POST'])
+@app.route(variables.DEFAULT_API_URL + '/addresses',methods=['GET', 'POST'])
+@app.route(variables.DEFAULT_API_URL + '/distributionpoints', methods=['POST'])
+@login_required
+def authenticatedRoutesGetOrPostAll():
+  logs.logger.debug("Authenticated -> {}-{} ".format(request.method, request.url))
+  return __getOrPostAll(current_user.is_authenticated)
+
+
+@app.route(variables.DEFAULT_API_URL + '/distributionowners/<id_>', methods=['PUT'])
+@app.route(variables.DEFAULT_API_URL + '/openinghourstemplates/<id_>', methods=['GET', 'PUT'])
+@app.route(variables.DEFAULT_API_URL + '/recurringslotstemplates/<id_>', methods=['GET', 'PUT'])
+@app.route(variables.DEFAULT_API_URL + '/addresses/<id_>', methods=['GET', 'PUT'])
+@app.route(variables.DEFAULT_API_URL + '/distributionpoints/<id_>', methods=['PUT'])
+@app.route(variables.DEFAULT_API_URL + '/covidtracking/<id_>', methods=['GET'])
+@login_required
+def authenticatedRoutesGetOrPutById(id_):
+  logs.logger.debug("Authenticated -> {}-{} ".format(request.method, request.url))
+  return __getOrPutOrDelById(current_user.is_authenticated, id_)
+
 
 def __getOrPostAll(isAdmin):
   try:
@@ -416,24 +440,4 @@ def __getOrPutOrDelById(isAdmin, id_):
     return utils.returnResponse("The server encountered an error while processing your request", 500)
 
 
-@app.route(variables.DEFAULT_API_URL + '/distributionowners',methods=['GET','POST'])
-@app.route(variables.DEFAULT_API_URL + '/openinghourstemplates',methods=['GET','POST'])
-@app.route(variables.DEFAULT_API_URL + '/recurringslotstemplates',methods=['GET','POST'])
-@app.route(variables.DEFAULT_API_URL + '/addresses',methods=['GET', 'POST'])
-@app.route(variables.DEFAULT_API_URL + '/distributionpoints', methods=['POST'])
-@login_required
-def authenticatedRoutesGetOrPostAll():
-  logs.logger.debug("Authenticated -> {}-{} ".format(request.method, request.url))
-  return __getOrPostAll(current_user.is_authenticated)
-
-
-@app.route(variables.DEFAULT_API_URL + '/distributionowners/<id_>', methods=['PUT'])
-@app.route(variables.DEFAULT_API_URL + '/openinghourstemplates/<id_>', methods=['GET', 'PUT'])
-@app.route(variables.DEFAULT_API_URL + '/recurringslotstemplates/<id_>', methods=['GET', 'PUT'])
-@app.route(variables.DEFAULT_API_URL + '/addresses/<id_>', methods=['GET', 'PUT'])
-@app.route(variables.DEFAULT_API_URL + '/distributionpoints/<id_>', methods=['PUT'])
-@app.route(variables.DEFAULT_API_URL + '/covidtracking/<id_>', methods=['GET'])
-@login_required
-def authenticatedRoutesGetOrPutById(id_):
-  logs.logger.debug("Authenticated -> {}-{} ".format(request.method, request.url))
-  return __getOrPutOrDelById(current_user.is_authenticated, id_)
+"""

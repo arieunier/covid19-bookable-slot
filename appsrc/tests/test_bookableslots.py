@@ -13,7 +13,7 @@ class TestCases(unittest.TestCase):
 
     def tearDown(self):
         pass
-
+    
     def test_access_unauthenticated(self):
         # gets a valid distribution point
         # authenticates properly
@@ -34,20 +34,20 @@ class TestCases(unittest.TestCase):
 
         # access bookable slots without a distribution poitn, must fail
         result, code = appsrc.tests.utils.HTTP_GET(variables.DEFAULT_API_URL + '/bookableslots', {}, {}, {})
-        self.assertEqual(code, 404)
+        self.assertEqual(code, 500)
     
         # access bookable slots with an incorrect dp, must fail
         result, code = appsrc.tests.utils.HTTP_GET(variables.DEFAULT_API_URL + '/bookableslots/unknown', {}, {}, {})
         self.assertEqual(code, 500)
 
         # access bslots with correct dp, no date start given, will default to current
-        result, code = appsrc.tests.utils.HTTP_GET(variables.DEFAULT_API_URL + '/bookableslots/' + distributionPointId, {}, {}, {})
+        result, code = appsrc.tests.utils.HTTP_GET(variables.DEFAULT_API_URL + '/bookableslots', {}, {'refDistributionPointId':distributionPointId}, {})
         self.assertEqual(code, 200)
         self.assertEqual(len(result.json), 3)
 
         # access bslots with correct dp, date in a day from current time
         tomorrow = (datetime.now() + timedelta(days=1)).strftime(variables.DATE_PATTERN)
-        result, code = appsrc.tests.utils.HTTP_GET(variables.DEFAULT_API_URL + '/bookableslots/' + distributionPointId, {}, {'dateStart':tomorrow}, {})
+        result, code = appsrc.tests.utils.HTTP_GET(variables.DEFAULT_API_URL + '/bookableslots', {}, {'dateStart':tomorrow, 'refDistributionPointId':distributionPointId}, {})
         self.assertEqual(code, 200)
         self.assertEqual(len(result.json), 1)
     
@@ -65,11 +65,54 @@ class TestCases(unittest.TestCase):
         #gets a distribution point id
         result, code = appsrc.tests.utils.HTTP_GET(variables.DEFAULT_API_URL + '/distributionpoints', {}, {'refDistributionOwnerId':distributionOwnerId}, {})
         self.assertEqual(code, 200)
-        distributionPointId = result.json[0]['id']        
+        distributionPointId = result.json[0]['id']       
+        #insert a new bookable slot 3 days from now but must fail
+        result, code =appsrc.tests.utils.HTTP_POST(variables.DEFAULT_API_URL + '/bookableslots', {'cookie':session_cookie}, {}, 
+            ujson.dumps({'refDistributionPointId':"unknown",
+                'maxCapacity':10,
+                'currentCapacity':10,
+                'dateStart': appsrc.tests.utils.dateToStr(datetime.now() + timedelta(days=3), variables.DATETIME_PATTERN),
+                'dateEnd':appsrc.tests.utils.dateToStr(datetime.now() + timedelta(days=4), variables.DATETIME_PATTERN),
+            }))
+        self.assertEqual(code, 500)            
+        result, code =appsrc.tests.utils.HTTP_POST(variables.DEFAULT_API_URL + '/bookableslots', {'cookie':session_cookie}, {}, 
+            ujson.dumps({'refDistributionPointId':distributionPointId,
+                'maxCapacity':0,
+                'currentCapacity':0,
+                'dateStart': appsrc.tests.utils.dateToStr(datetime.now() + timedelta(days=3), variables.DATETIME_PATTERN),
+                'dateEnd':appsrc.tests.utils.dateToStr(datetime.now() + timedelta(days=4), variables.DATETIME_PATTERN),
+            }))
+        self.assertEqual(code, 500)            
+        result, code =appsrc.tests.utils.HTTP_POST(variables.DEFAULT_API_URL + '/bookableslots', {'cookie':session_cookie}, {}, 
+            ujson.dumps({'refDistributionPointId':distributionPointId,
+                'maxCapacity':10,
+                'currentCapacity':10                
+            }))
+        self.assertEqual(code, 500)                   
+        result, code =appsrc.tests.utils.HTTP_POST(variables.DEFAULT_API_URL + '/bookableslots', {'cookie':session_cookie}, {}, 
+            ujson.dumps({'refDistributionPointId':distributionPointId,
+                'maxCapacity':10,
+                'currentCapacity':10,
+                'dateStart': appsrc.tests.utils.dateToStr(datetime.now() + timedelta(days=3), variables.DATETIME_PATTERN),
+                'dateEnd':appsrc.tests.utils.dateToStr(datetime.now() + timedelta(days=4), variables.DATETIME_PATTERN),
+            }))
+    
+        self.assertEqual(code, 200)
+        newBookableSlotId=result.json['id']
+        # gets it
+        result, code =appsrc.tests.utils.HTTP_GET(variables.DEFAULT_API_URL + '/bookableslots/'+newBookableSlotId, {'cookie':session_cookie}, {},{} )
+        self.assertEqual(code, 200)
+        self.assertEqual(newBookableSlotId, result.json['id'])
+        # deletes it
+        result, code =appsrc.tests.utils.HTTP_DEL(variables.DEFAULT_API_URL + '/bookableslots/'+newBookableSlotId, {'cookie':session_cookie}, {},{} )
+        self.assertEqual(code, 200)
+
+
         # access bslots with correct dp, no date start given, will default to current
-        result, code = appsrc.tests.utils.HTTP_GET(variables.DEFAULT_API_URL + '/bookableslots/' + distributionPointId, {}, {}, {})
+        result, code = appsrc.tests.utils.HTTP_GET(variables.DEFAULT_API_URL + '/bookableslots', {}, {'refDistributionPointId':distributionPointId}, {})
         self.assertEqual(code, 200)
         self.assertEqual(len(result.json), 3)
+        print(result.json)
         firstBookableSlotId = result.json[0]['id']
         secondBookableSlotId =result.json[1]['id']
 
@@ -78,10 +121,10 @@ class TestCases(unittest.TestCase):
             ujson.dumps({'refDistributionPointId': distributionPointId, "refBookableSlotId":firstBookableSlotId, 
             'firstname':'firstname', 'lastname':'lastname', 'telephone':'+1231231231', 'email':'email@me.com', 'numberOfPerson':1}))
         self.assertEqual(code, 200)
-        print(result.json)
+
     
         #make sure capacity has decreased
-        result, code = appsrc.tests.utils.HTTP_GET(variables.DEFAULT_API_URL + '/bookableslots/' + distributionPointId, {}, {}, {})
+        result, code = appsrc.tests.utils.HTTP_GET(variables.DEFAULT_API_URL + '/bookableslots', {},  {'refDistributionPointId':distributionPointId}  , {})
         self.assertNotEqual(result.json[0]['maxCapacity'], result.json[0]['currentCapacity'])
 
         #insert a second booked slot with same info, should fail because this person already has a booked slot
