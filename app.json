@@ -54,12 +54,6 @@
         "Description" : "Default API URI",
         "value" : "/api/covid19",
         "required" : false
-      },
-      "SECRET_KEY": 
-      {
-        "Description": "Internal secret key for cookies and session encryption. Use default or generate a new one",
-        "value": "\xf1\xa9'\xb3\xef\xfb]\r\xfff\xe0^\xafk&v",
-        "required": true
       }
   },
 
