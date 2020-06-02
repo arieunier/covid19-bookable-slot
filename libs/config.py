@@ -1,4 +1,5 @@
-import os, variables, redis
+import os, redis
+from libs import variables
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 class config(object):
