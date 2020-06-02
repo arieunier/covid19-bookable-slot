@@ -27,9 +27,9 @@ class TestCases(unittest.TestCase):
         distributionOwnerId = result.json[0]['id']
         # flush sessions
         appsrc.tests.utils.purgeCookies()
-        # tries to get all distributin owner, must fail
+        # tries to get all distributin owner, must succeed
         result, code = appsrc.tests.utils.HTTP_GET(variables.DEFAULT_API_URL + '/distributionowners', {}, {}, {})
-        self.assertEqual(code, 401)
+        self.assertEqual(code, 200)
         
         # tries to get one distribution owner, must work
         result, code = appsrc.tests.utils.HTTP_GET(variables.DEFAULT_API_URL + '/distributionowners/' + distributionOwnerId, {}, {}, {})
