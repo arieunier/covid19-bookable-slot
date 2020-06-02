@@ -13,7 +13,7 @@ externalDocs:
   description: Find out more about Swagger
   url: http://swagger.io
 servers:
-- url: http://127.0.0.1:5000/api/covid19
+- url: https://covidslotapi.herokuapp.com/api/covid19
 tags:
 - name: Session Management
   description: login/logout
