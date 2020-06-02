@@ -31,6 +31,7 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 db = SQLAlchemy(app)
 swagger = Swagger(app)
+logs.logger.info("secret_key={}".format(config.config.SECRET_KEY))
 #migrate = Migrate(app, db)
 
 SWAGGER_URL = '/api/docs'  # URL for exposing Swagger UI (without trailing '/')
