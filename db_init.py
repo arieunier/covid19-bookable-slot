@@ -13,18 +13,12 @@ if (len(db.session.query(User).all()) == 0):
     db.drop_all()
     logs.logger.info("Creating a new version of the db")
     db.create_all()
-    logs.logger.info("Adding Use")
+    logs.logger.info("Adding User")
     u = User(username=variables.DEFAULT_ADMIN_USERNAME,email=variables.DEFAULT_ADMIN_EMAIL,id=uuid.uuid4().__str__())
     u.set_password(variables.DEFAULT_ADMIN_PASSWORD)
-
     db.session.add(u)
-    logs.logger.info("Adding address")
-    # ADDRESS PART
-    add_uid = uuid.uuid4().__str__()
-    add = Address(id=add_uid, street='Rue Mertens', number="2", zipcode="92270", city="Bois Colombes", country="France")
-    db.session.add(add)
-    db.session.commit()
-    logs.logger.info("Adding OHT")
+
+
     #openinghourstemplate
     sched = DailySchedule("09:00", "", "", "19:00")
     sched_str = sched.serialize.__str__()
@@ -40,6 +34,17 @@ if (len(db.session.query(User).all()) == 0):
     slotLength=30, slotCapacity=10)
     db.session.add(recurringSlotsTemplate)
     db.session.commit()
+
+
+    """    
+    logs.logger.info("Adding address")
+    # ADDRESS PART
+    add_uid = uuid.uuid4().__str__()
+    add = Address(id=add_uid, street='Rue Mertens', number="2", zipcode="92270", city="Bois Colombes", country="France")
+    db.session.add(add)
+    db.session.commit()
+    logs.logger.info("Adding OHT")
+
 
     logs.logger.info("Adding DO")
     # DistributionOwner Part
@@ -73,3 +78,4 @@ if (len(db.session.query(User).all()) == 0):
     BS2 = BookableSlot(id=BS2Id, dateStart=now + timedelta(hours=23), dateEnd=now + timedelta(hours=25), maxCapacity=10, refDistributionPointId=distPart, currentCapacity=0)
     db.session.add(BS2)
     db.session.commit()
+    """
