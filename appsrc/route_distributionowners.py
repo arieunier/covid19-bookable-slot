@@ -20,9 +20,14 @@ from appsrc import route_generic
 def get_unauthenticated_distributionowners_byId(id_):
     return route_generic.genericGetPutDelById("/distributionowners/<id_>",current_user.is_authenticated, id_)
 
-@app.route(variables.DEFAULT_API_URL + '/distributionowners',methods=['GET','POST'])
+@app.route(variables.DEFAULT_API_URL + '/distributionowners',methods=['GET'])
+def get_distributionowners():
+    return route_generic.genericGetPost("/distributionowners",current_user.is_authenticated)
+
+
+@app.route(variables.DEFAULT_API_URL + '/distributionowners',methods=['POST'])
 @login_required
-def get_post_distributionowners():
+def post_distributionowners():
     return route_generic.genericGetPost("/distributionowners",current_user.is_authenticated)
 
 @app.route(variables.DEFAULT_API_URL + '/distributionowners/<id_>',methods=['PUT', 'GET'])

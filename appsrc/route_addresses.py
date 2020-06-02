@@ -17,7 +17,7 @@ import ujson
 from appsrc import route_generic
 
 
-@app.route(variables.DEFAULT_API_URL + '/addresses',methods=['GET','POST'])
+@app.route(variables.DEFAULT_API_URL + '/addresses',methods=['POST'])
 @login_required
 def get_post_addresses():
     return route_generic.genericGetPost("/addresses",current_user.is_authenticated)

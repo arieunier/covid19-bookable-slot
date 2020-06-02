@@ -15,6 +15,10 @@ def logout():
     logout_user()
     return utils.returnResponse(jsonify("Goodbye Marilou"), 200)
 
+@app.route(variables.DEFAULT_API_URL + '/login', methods=['OPTIONS'])
+def login_OPTION():
+    logs.logger.debug(utils.get_debug_all(request))    
+    return "hey", 200
 
 @app.route(variables.DEFAULT_API_URL + '/login', methods=['GET', 'POST'])
 def login():

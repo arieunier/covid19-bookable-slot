@@ -11,3 +11,6 @@ flask_security
 redis
 ujson
 coverage
+flask-swagger-ui
+flask-cors
+flasgger
