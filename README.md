@@ -15,7 +15,7 @@ V1.0:
   - Bookable Slot : an open slot anyone can register to. Is linked to a distribution point.
   - Booked Slot: a 'booking' for an end user.
   - Covid Tracking: a 'contact me' information card for people visite distribution points. They can flash it and fill it to be informed if someone with covid was in the store the same day than them. 
-- APIs are described in the openapi.json file in Staticfolder. It can be displayed using a swagger viewer, available at the /api/docs route.
+- APIs are described in the openapi.json file in the Static folder. It can be displayed using a swagger viewer, available at the /api/docs route. Or open the swagger.md file at the root folder.
 
 
 Following items are in the roadmap and will be published on this git repo:
