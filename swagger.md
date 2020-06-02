@@ -576,9 +576,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/DistributionPoint_WithoutChildren'
+                $ref: '#/components/schemas/DistributionPoint_WithoutChildren'
         401:
           description: Unauthorized
           content: {}
@@ -678,6 +676,255 @@ paths:
         500:
           description: Invalid input
           content: {}         
+
+  /openinghourstemplates:
+    get:
+      tags:
+      - Template definitions
+      summary: Gets all opening hours template
+      security:
+      - cookieAuth: []        
+      responses:
+        200:
+          description: All good!
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OpeningHoursTemplate'
+        401:
+          description: Unauthorized
+          content: {}
+        404:
+          description: Invalid input
+          content: {}
+        500:
+          description: Invalid input
+          content: {}    
+    post:
+      tags:
+      - Template definitions
+      summary: creates a new openinghourtemplate
+      security:
+      - cookieAuth: []      
+      description: creates a new opening hour template
+      requestBody:
+        description: the opening hour template data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpeningHoursTemplate'
+        required: true    
+      responses:
+        200:
+          description: All good!
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpeningHoursTemplate'
+        401:
+          description: Unauthorized
+          content: {}
+        404:
+          description: Invalid input
+          content: {}
+        500:
+          description: Invalid input
+          content: {}   
+
+  /openinghourstemplates/{id}:
+    get:
+      tags:
+      - Template definitions
+      summary: Gets a opening hour template.
+      security:
+      - cookieAuth: []        
+      parameters:
+      - name: id
+        in: path
+        description: ID of opening hour template 
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: All good!
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpeningHoursTemplate'
+        401:
+          description: Unauthorized
+          content: {}
+        404:
+          description: Invalid input
+          content: {}
+        500:
+          description: Invalid input
+          content: {}  
+    put:
+      tags:
+      - Template definitions
+      summary: updates an opening hours template based on its id
+      description: updates an opening hours template based on its id
+      security:
+      - cookieAuth: []        
+      requestBody:
+        description: the data to update
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpeningHoursTemplate'
+        required: true
+      parameters:
+      - name: id
+        in: path
+        description: ID of opening hour template 
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/OpeningHoursTemplate'
+        401:
+          description: Unauthorized
+          content: {}
+        404:
+          description: Invalid input
+          content: {}
+        500:
+          description: Invalid input
+          content: {}         
+  
+  /recurringslottemplates:
+    get:
+      tags:
+      - Template definitions
+      summary: Gets all recurring slot templates
+      security:
+      - cookieAuth: []        
+      responses:
+        200:
+          description: All good!
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RecurringSlotsTemplate'
+        401:
+          description: Unauthorized
+          content: {}
+        404:
+          description: Invalid input
+          content: {}
+        500:
+          description: Invalid input
+          content: {}    
+    post:
+      tags:
+      - Template definitions
+      summary: creates a new recurring slot template
+      security:
+      - cookieAuth: []      
+      description: creates a new recurring slot template
+      requestBody:
+        description: the recurring slot template data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecurringSlotsTemplate'
+        required: true    
+      responses:
+        200:
+          description: All good!
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecurringSlotsTemplate'
+        401:
+          description: Unauthorized
+          content: {}
+        404:
+          description: Invalid input
+          content: {}
+        500:
+          description: Invalid input
+          content: {}   
+
+  /recurringstlotstemplates/{id}:
+    get:
+      tags:
+      - Template definitions
+      summary: Gets a recurring slot template.
+      security:
+      - cookieAuth: []        
+      parameters:
+      - name: id
+        in: path
+        description: ID of recurring slot template 
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: All good!
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecurringSlotsTemplate'
+        401:
+          description: Unauthorized
+          content: {}
+        404:
+          description: Invalid input
+          content: {}
+        500:
+          description: Invalid input
+          content: {}  
+    put:
+      tags:
+      - Template definitions
+      summary: updates a recurring slot template based on its id
+      description: updates a recurring slot template based on its id
+      security:
+      - cookieAuth: []        
+      requestBody:
+        description: the data to update
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecurringSlotsTemplate'
+        required: true
+      parameters:
+      - name: id
+        in: path
+        description: ID of recurring slot template
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/RecurringSlotsTemplate'
+        401:
+          description: Unauthorized
+          content: {}
+        404:
+          description: Invalid input
+          content: {}
+        500:
+          description: Invalid input
+          content: {}           
+          
 components:
   schemas:
     Address:
